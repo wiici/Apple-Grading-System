@@ -8,7 +8,8 @@ CONFIG += c++11
 
 TEMPLATE = app
 TARGET = Application
-INCLUDEPATH += .
+INCLUDEPATH += /usr/local/include
+LIBS += -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_videoio
 
 # Input
 HEADERS += ./include/*
