@@ -25,6 +25,12 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
     ShowConnectedCameras();
 
+    ui->sourceImages_Label->setScaledContents(true);
+
+    ui->connectStatus_Label->setStyleSheet("background-color: red");
+
+    ui->thresholdValue_Slider->setSliderPosition(150);
+
 }
 
 MainWindow::~MainWindow()
@@ -36,6 +42,40 @@ MainWindow::~MainWindow()
 
     delete ui;
     delete imageProcessingThread;
+}
+
+void MainWindow::Init()
+{
+    // Create new thread for image processing work
+    // (streaming capture video in the background.
+    imageProcessingThread = new QThread();
+    ImageProcessModule *IPworker = new ImageProcessModule();
+    //
+    QTimer *timer = new QTimer();
+    timer->setInterval(1);
+
+    // Connect the signals to the property slots.
+    //
+    connect(timer, SIGNAL(timeout()), IPworker, SLOT(grabImage()) );
+    //
+    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)), IPworker, SLOT(changeSetup(int)));
+    //
+    connect(IPworker, SIGNAL(connectStatusHasChanged(QString)), ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
+    //
+    connect(ui->refreshList_Button, SIGNAL(pressed()), this, SLOT(ShowConnectedCameras()) );
+    //
+    connect(IPworker, SIGNAL(sendFrame(cv::Mat*)), this, SLOT(DisplaySourceImage(cv::Mat*)));
+    // When the thread starts, the 'timer' will be informed and will start working too
+    connect(imageProcessingThread, SIGNAL(started()), timer, SLOT(start()));
+    //
+    connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)), IPworker, SLOT(changeThresholdValue(int)));
+
+    IPworker->moveToThread(imageProcessingThread);
+    timer->moveToThread(imageProcessingThread);
+
+    imageProcessingThread->start();
+
+
 }
 
 
@@ -80,10 +120,9 @@ void MainWindow::ShowConnectedCameras() {
 void MainWindow::DisplaySourceImage(cv::Mat *Image)
 {
     // Converting openCV image to Qt Image
-    QImage *converted2qimage = new QImage((unsigned char*)Image->data, Image->rows, Image->cols, QImage::Format_Indexed8);
+    QImage *converted2qimage = new QImage((unsigned char*)Image->data, Image->rows, Image->cols, QImage::Format_Grayscale8);
 
-
-
+    ui->sourceImages_Label->setPixmap(QPixmap::fromImage(*converted2qimage));
 
 }
 
@@ -96,18 +135,11 @@ void MainWindow::receiveConnectStatusHasChanged(const bool connectStatus)
 
 }
 
+//*************************************************
+//
+//              OTHER FUNCTIONS
+//
+//
 
-void MainWindow::Init()
-{
-    imageProcessingThread = new QThread();
-    ImageProcessModule *IPworker = new ImageProcessModule();
-    QTimer *timer = new QTimer();
-    timer->setInterval(1);
 
-    connect(timer, SIGNAL(timeout()), IPworker, SLOT(grabImage()) );
-    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)), IPworker, SLOT(changeSetup(int)));
-    connect(IPworker, SIGNAL(connectStatusHasChanged(QString)), ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
-    connect(ui->refreshList_Button, SIGNAL(pressed()), this, SLOT(ShowConnectedCameras()) );
 
-    imageProcessingThread->exit();
-}

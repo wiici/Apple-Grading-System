@@ -24,6 +24,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QThread *imageProcessingThread;
+    QSlider costam();
 
 
     // show all available video capture devices in the ComboBox

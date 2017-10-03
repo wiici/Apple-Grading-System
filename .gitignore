@@ -4,6 +4,7 @@
 Makefile*
 ui_*.h
 *.pro.user
+*.pro.swp
 
 moc_*.h
 moc_*.cpp

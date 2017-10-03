@@ -8,20 +8,14 @@
 
 ImageProcessModule::ImageProcessModule(QObject *parent) :
     QObject(parent),
-    connectStatus(false)
+    connectStatus(false),
+    thresholdValue(150)
 {
+    SourceImage = new cv::Mat();
+    GrayScaleImage = new cv::Mat();
+    BinaryImage = new cv::Mat();
+
     Camera = new cv::VideoCapture();
-}
-
-
-ImageProcessModule::ImageProcessModule(const int DeviceIndex, QObject *parent) :
-    ImageProcessModule(parent)
-
-{
-	Camera = new cv::VideoCapture(DeviceIndex);
-
-	if( !Camera->isOpened() )
-			;
 }
 
 
@@ -43,14 +37,25 @@ ImageProcessModule::~ImageProcessModule()
 
 void ImageProcessModule::grabImage()
 {
-    (*Camera) >> (this->SourceImage);
+    (*Camera) >> (*SourceImage);
 
-    emit sendFrame(this->SourceImage);
+    if( SourceImage->empty() )
+        return;
+
+    preProcess();
+
+    cv::imshow("source", *SourceImage);
+    cv::imshow("grayscale", *GrayScaleImage);
+    cv::imshow("binary", *BinaryImage);
+
+    emit sendFrame(SourceImage);
 }
 
 
-void ImageProcessModule::changeSetup(const int CameraIndex)
+void ImageProcessModule::changeSetup(int CameraIndex)
 {
+
+    CameraIndex--;
 
     if( Camera->isOpened() )
         Camera->release();
@@ -65,6 +70,12 @@ void ImageProcessModule::changeSetup(const int CameraIndex)
 }
 
 
+void ImageProcessModule::changeThresholdValue(int value)
+{
+    if(value <= 256 && value >= 0)
+        this->thresholdValue = value;
+}
+
 //*************************************************
 //
 //          OTHER FUNCTIONS
@@ -72,5 +83,12 @@ void ImageProcessModule::changeSetup(const int CameraIndex)
 //
 
 
+void ImageProcessModule::preProcess()
+{
 
+    cv::cvtColor(*SourceImage, *GrayScaleImage, CV_BGR2GRAY);
+
+    cv::threshold(*GrayScaleImage, *BinaryImage, thresholdValue, 250, cv::THRESH_BINARY);
+
+}
 

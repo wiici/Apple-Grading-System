@@ -30,7 +30,7 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QSlider" name="horizontalSlider">
+   <widget class="QSlider" name="thresholdValue_Slider">
     <property name="geometry">
      <rect>
       <x>90</x>
@@ -38,6 +38,33 @@
       <width>160</width>
       <height>16</height>
      </rect>
+    </property>
+    <property name="sizeIncrement">
+     <size>
+      <width>1</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="mouseTracking">
+     <bool>false</bool>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="toolTipDuration">
+     <number>1</number>
+    </property>
+    <property name="statusTip">
+     <string/>
+    </property>
+    <property name="whatsThis">
+     <string/>
+    </property>
+    <property name="accessibleDescription">
+     <string/>
+    </property>
+    <property name="maximum">
+     <number>255</number>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -74,8 +101,8 @@
      <rect>
       <x>330</x>
       <y>10</y>
-      <width>281</width>
-      <height>201</height>
+      <width>311</width>
+      <height>251</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -96,6 +123,19 @@
     </property>
     <property name="text">
      <string>Refresh the list</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>300</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Threshold value</string>
     </property>
    </widget>
   </widget>
