@@ -22,7 +22,9 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     QMainWindow::setWindowTitle(WindowName);
 
+
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
+
     ShowConnectedCameras();
 
     ui->sourceImages_Label->setScaledContents(true);
@@ -69,6 +71,10 @@ void MainWindow::Init()
     connect(imageProcessingThread, SIGNAL(started()), timer, SLOT(start()));
     //
     connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)), IPworker, SLOT(changeThresholdValue(int)));
+    //
+    connect(IPworker, SIGNAL(lostConnection()), this, SLOT(setInitConf()) );
+    //
+    connect(this, SIGNAL(setDefaultIndex(int)), IPworker, SLOT(changeSetup(int)));
 
     IPworker->moveToThread(imageProcessingThread);
     timer->moveToThread(imageProcessingThread);
@@ -132,6 +138,17 @@ void MainWindow::receiveConnectStatusHasChanged(const bool connectStatus)
 
     if( connectStatus )
         ui->connectStatus_Label->setStyleSheet("background-color: green");
+
+}
+
+void MainWindow::setInitConf()
+{
+    // Set red color of connection status to inform
+    ui->connectStatus_Label->setStyleSheet("background-color: red");
+
+    ShowConnectedCameras();
+
+    emit setDefaultIndex(0);
 
 }
 

@@ -25,13 +25,15 @@ private:
     Ui::MainWindow *ui;
     QThread *imageProcessingThread;
     QSlider costam();
-
+signals:
+    void setDefaultIndex(int Index);
 
     // show all available video capture devices in the ComboBox
 public slots:
     void ShowConnectedCameras();
     void DisplaySourceImage(cv::Mat *Image);
     void receiveConnectStatusHasChanged(const bool connectStatus);
+    void setInitConf();
 
 
 };

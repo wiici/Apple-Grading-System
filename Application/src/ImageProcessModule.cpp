@@ -9,6 +9,7 @@
 ImageProcessModule::ImageProcessModule(QObject *parent) :
     QObject(parent),
     connectStatus(false),
+    isInitConfiguration(true),
     thresholdValue(150)
 {
     SourceImage = new cv::Mat();
@@ -37,6 +38,14 @@ ImageProcessModule::~ImageProcessModule()
 
 void ImageProcessModule::grabImage()
 {
+
+    if( !Camera->grab() && !isInitConfiguration )
+    {
+        Camera->release();
+        emit lostConnection();
+        return;
+    }
+
     (*Camera) >> (*SourceImage);
 
     if( SourceImage->empty() )
@@ -57,6 +66,12 @@ void ImageProcessModule::changeSetup(int CameraIndex)
 
     CameraIndex--;
 
+    if( CameraIndex < 0)
+    {
+        isInitConfiguration = true;
+        return;
+    }
+
     if( Camera->isOpened() )
         Camera->release();
 
@@ -64,8 +79,10 @@ void ImageProcessModule::changeSetup(int CameraIndex)
 
     Camera->open(CameraIndex);
 
-    if( Camera->isOpened() )
+    if( Camera->isOpened() ) {
         emit connectStatusHasChanged("background-color: green");
+        isInitConfiguration = false;
+    }
 
 }
 

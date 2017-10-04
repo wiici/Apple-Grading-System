@@ -21,6 +21,7 @@ class ImageProcessModule : public QObject {
 		cv::VideoCapture *Camera;
 
         bool connectStatus;
+        bool isInitConfiguration;
         unsigned int thresholdValue;
 
         void preProcess();
@@ -33,6 +34,7 @@ class ImageProcessModule : public QObject {
     signals:
         void sendFrame(cv::Mat *Image);
         void connectStatusHasChanged(QString);
+        void lostConnection();
 
     public slots:
         void grabImage();
