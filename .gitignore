@@ -9,4 +9,15 @@ ui_*.h
 moc_*.h
 moc_*.cpp
 
+*.project
+*.cproject
+*.settings
+
+*.cmake
+CMakeCache.txt
+CMakeFiles/
+
+ImageProcessModule/ImageProcessModule
+
 Application/Application
+
