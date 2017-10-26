@@ -1,9 +1,3 @@
-/*
- * ImageProcessModule.cpp
- *
- *  Created on: Oct 17, 2017
- *      Author: witek
- */
 
 #include "ImageProcessModule.h"
 
@@ -56,6 +50,3 @@ unsigned int ImageProcessModule::getThresholdValue()
 {
 	return this->ThresholdValue;
 }
-
-
-

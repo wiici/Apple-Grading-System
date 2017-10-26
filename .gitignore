@@ -21,3 +21,7 @@ ImageProcessModule/ImageProcessModule
 
 Application/Application
 
+latex
+html
+build
+bin
