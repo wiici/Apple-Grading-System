@@ -1,6 +1,7 @@
 #include "include/MainWindow.h"
+#include "include/ImageProcessWorker.h"
 #include "ui_mainwindow.h"
-#include "include/ImageProcessModule.h"
+
 
 #include <QString>
 #include <QFile>
@@ -8,6 +9,8 @@
 #include <QImage>
 #include <QThread>
 #include <QTimer>
+#include <QMessageBox>
+#include <QCheckBox>
 
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -22,17 +25,15 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     QMainWindow::setWindowTitle(WindowName);
 
+    this->ImPrWorker = new ImageProcessWorker(parent);
 
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
 
     ShowConnectedCameras();
 
-    ui->sourceImages_Label->setScaledContents(true);
-
     ui->connectStatus_Label->setStyleSheet("background-color: red");
 
-    ui->thresholdValue_Slider->setSliderPosition(150);
-
+    ui->thresholdValue_Slider->setSliderPosition(5);
 }
 
 MainWindow::~MainWindow()
@@ -51,35 +52,41 @@ void MainWindow::Init()
     // Create new thread for image processing work
     // (streaming capture video in the background.
     imageProcessingThread = new QThread();
-    ImageProcessModule *IPworker = new ImageProcessModule();
-    //
+
     QTimer *timer = new QTimer();
-    timer->setInterval(1);
+    timer->setInterval(40);
+
+    //this->ImPrWorker->ImageProcessModule::setThresholdValue(249);
 
     // Connect the signals to the property slots.
-    //
-    connect(timer, SIGNAL(timeout()), IPworker, SLOT(grabImage()) );
-    //
-    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)), IPworker, SLOT(changeSetup(int)));
-    //
-    connect(IPworker, SIGNAL(connectStatusHasChanged(QString)), ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
-    //
+
+    connect(timer, SIGNAL(timeout()), ImPrWorker, SLOT(grabImageFromCamera()) );
+
+    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)), this->ImPrWorker, SLOT(changeSetup(int)));
+
+    connect(this->ImPrWorker, SIGNAL(connectStatusHasChanged(QString)), ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
+
     connect(ui->refreshList_Button, SIGNAL(pressed()), this, SLOT(ShowConnectedCameras()) );
-    //
-    connect(IPworker, SIGNAL(sendFrame(cv::Mat*)), this, SLOT(DisplaySourceImage(cv::Mat*)));
+
+    connect(this->ImPrWorker, SIGNAL(sendFrame(cv::Mat*)), this, SLOT(DisplaySourceImage(cv::Mat*)));
     // When the thread starts, the 'timer' will be informed and will start working too
     connect(imageProcessingThread, SIGNAL(started()), timer, SLOT(start()));
-    //
-    connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)), IPworker, SLOT(changeThresholdValue(int)));
-    //
-    connect(IPworker, SIGNAL(lostConnection()), this, SLOT(setInitConf()) );
-    //
-    connect(this, SIGNAL(setDefaultIndex(int)), IPworker, SLOT(changeSetup(int)));
 
-    IPworker->moveToThread(imageProcessingThread);
+    connect(this->ImPrWorker, SIGNAL(lostConnection()), this, SLOT(setInitConf()) );
+
+    connect(this, SIGNAL(setDefaultIndex(int)), this->ImPrWorker, SLOT(changeSetup(int)));
+
+    connect(this->ImPrWorker, SIGNAL(cantConnectToCamera()), this, SLOT(informCannotConnectToCamera()) );
+
+    connect(this->ImPrWorker, SIGNAL(frameHasGrabbed()), this, SLOT(displayBinaryImage()));
+
+    connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)), this, SLOT(changeThreshold(int)));
+
+    this->ImPrWorker->moveToThread(imageProcessingThread);
     timer->moveToThread(imageProcessingThread);
 
     imageProcessingThread->start();
+
 
 
 }
@@ -125,20 +132,25 @@ void MainWindow::ShowConnectedCameras() {
 
 void MainWindow::DisplaySourceImage(cv::Mat *Image)
 {
-    // Converting openCV image to Qt Image
-    QImage *converted2qimage = new QImage((unsigned char*)Image->data, Image->rows, Image->cols, QImage::Format_Grayscale8);
-
-    ui->sourceImages_Label->setPixmap(QPixmap::fromImage(*converted2qimage));
 
 }
 
+void MainWindow::displayBinaryImage()
+{
+    if(ui->displaySourceImage_checkBox->isChecked())
+        cv::imshow("Source Image", *(this->ImPrWorker->getSourceImage()));
+
+    if(ui->displayGrayscaleImage_checkBox->isChecked())
+        cv::imshow("Grayscale Image", *(this->ImPrWorker->getGrayscaleImage()));
+
+    if(ui->displayEdgesImage_checkBox->isChecked())
+        cv::imshow("binary", *(this->ImPrWorker->getBinaryImage()));
+}
 
 void MainWindow::receiveConnectStatusHasChanged(const bool connectStatus)
 {
-
     if( connectStatus )
         ui->connectStatus_Label->setStyleSheet("background-color: green");
-
 }
 
 void MainWindow::setInitConf()
@@ -149,7 +161,17 @@ void MainWindow::setInitConf()
     ShowConnectedCameras();
 
     emit setDefaultIndex(0);
+}
 
+void MainWindow::informCannotConnectToCamera()
+{
+    QMessageBox::warning(this, "Error", "Can't connect to the camera");
+}
+
+
+void MainWindow::changeThreshold(int Value)
+{
+    this->ImPrWorker->setThresholdValue(Value);
 }
 
 //*************************************************

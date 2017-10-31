@@ -70,19 +70,6 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QSlider" name="horizontalSlider_2">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>380</y>
-      <width>160</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
    <widget class="QLabel" name="connectStatus_Label">
     <property name="geometry">
      <rect>
@@ -91,22 +78,6 @@
       <width>20</width>
       <height>20</height>
      </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QLabel" name="sourceImages_Label">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>10</y>
-      <width>311</width>
-      <height>251</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">border: 1px solid;</string>
     </property>
     <property name="text">
      <string/>
@@ -136,6 +107,45 @@
     </property>
     <property name="text">
      <string>Threshold value</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="displaySourceImage_checkBox">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>30</y>
+      <width>161</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Display source image</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="displayGrayscaleImage_checkBox">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>60</y>
+      <width>161</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Display grayscale image</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="displayEdgesImage_checkBox">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>90</y>
+      <width>161</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Display image with edges</string>
     </property>
    </widget>
   </widget>

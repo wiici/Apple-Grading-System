@@ -7,6 +7,9 @@
 
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
+#include "include/ImageProcessWorker.h"
+
+
 
 namespace Ui {
 class MainWindow;
@@ -25,6 +28,7 @@ private:
     Ui::MainWindow *ui;
     QThread *imageProcessingThread;
     QSlider costam();
+    ImageProcessWorker *ImPrWorker;
 signals:
     void setDefaultIndex(int Index);
 
@@ -34,8 +38,9 @@ public slots:
     void DisplaySourceImage(cv::Mat *Image);
     void receiveConnectStatusHasChanged(const bool connectStatus);
     void setInitConf();
-
-
+    void informCannotConnectToCamera();
+    void displayBinaryImage();
+    void changeThreshold(int Value);
 };
 
 #endif // MAINWINDOW_H

@@ -5,7 +5,7 @@ Makefile*
 ui_*.h
 *.pro.user
 *.pro.swp
-
+*.pro.swo
 moc_*.h
 moc_*.cpp
 
