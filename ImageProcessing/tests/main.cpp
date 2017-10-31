@@ -2,6 +2,8 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
+#define CAMERA_ID 0
+
 
 TEST(DefaultConstructor_Test, Default)
 {
@@ -63,7 +65,7 @@ TEST(connectToCamera_Test, attachedCameraID)
 {
 	ImageProcessModule test;
 
-	EXPECT_TRUE(test.connectToCamera(0));
+	EXPECT_TRUE(test.connectToCamera(CAMERA_ID));
 }
 
 TEST(connectToCamera_Test, notAttachedCameraID)
@@ -84,28 +86,27 @@ TEST(grabImage_Test, default)
 {
 	ImageProcessModule test;
 
-	EXPECT_TRUE(test.connectToCamera(0));
+	EXPECT_TRUE(test.connectToCamera(CAMERA_ID));
 	EXPECT_TRUE(test.grabImage());
 
 }
 
 TEST(imagePreProcessing, default)
 {
+
 	ImageProcessModule test;
 
-	test.connectToCamera(0);
+	test.connectToCamera(CAMERA_ID);
+	test.setThresholdValue(50);
+	while(true)
+	{
+		test.grabImage();
+		test.imagePreProcessing();
+		test.imageSegmentation();
+		cv::imshow("obraz", *(test.getBinaryImage()));
+		cv::waitKey(25);
+	}
 
-
-
-	test.grabImage();
-
-	test.imagePreProcessing();
-
-	cv::imshow("Source Image", *(test.getSourceImage()));
-	cv::imshow("GrayScale Image", *(test.getGrayscaleImage()) );
-	cv::imshow("Binary Image", *(test.getBinaryImage()) );
-
-	cv::waitKey(0);
 
 }
 

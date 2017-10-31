@@ -11,6 +11,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
 /**
  *
@@ -22,15 +23,16 @@ class ImageProcessModule
 {
 private:
 
-	cv::Mat *SourceImage;
-	cv::Mat *GrayScaleImage;
-	cv::Mat *BinaryImage;
+	cv::Mat* SourceImage;
+	cv::Mat* GrayScaleImage;
+	cv::Mat* BinaryImage;
 
-	cv::VideoCapture *Camera;
+	cv::VideoCapture* Camera;
 
 	int ThresholdValue;
 
 public:
+
 	/**
 	 * @brief Constructor
 	 *
@@ -51,7 +53,7 @@ public:
 	 *
 	 * @param Value to set
 	 */
-	void setThresholdValue(const int Value);
+	void setThresholdValue(int Value);
 
 	/**
 	 * @brief Getter
@@ -128,6 +130,8 @@ public:
 	 *
 	 */
 	void imagePreProcessing();
+
+	void thresh_callback(int, void* );
 
 	void imageSegmentation();
 
