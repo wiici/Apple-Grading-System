@@ -4,6 +4,16 @@
 #include <QMainWindow>
 #include <QString>
 #include <QComboBox>
+#include <QFile>
+#include <QTextStream>
+#include <QImage>
+#include <QThread>
+#include <QTimer>
+#include <QMessageBox>
+#include <QCheckBox>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QVector>
 
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -27,12 +37,12 @@ public:
 private:
     Ui::MainWindow *ui;
     QThread *imageProcessingThread;
-    QSlider costam();
     ImageProcessWorker *ImPrWorker;
+    QVector<QCheckBox*> ListOfCheckBoxes;
+    void createImageTypesBox();
+
 signals:
     void setDefaultIndex(int Index);
-
-    // show all available video capture devices in the ComboBox
 public slots:
     void ShowConnectedCameras();
     void DisplaySourceImage(cv::Mat *Image);
@@ -41,6 +51,8 @@ public slots:
     void informCannotConnectToCamera();
     void displayBinaryImage();
     void changeThreshold(int Value);
+    void setWindowsWithImages();
+    void receive_connectionEstablished();
+    void selectAllCheckBoxes(int status);
 };
-
 #endif // MAINWINDOW_H

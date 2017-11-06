@@ -3,14 +3,7 @@
 #include "ui_mainwindow.h"
 
 
-#include <QString>
-#include <QFile>
-#include <QTextStream>
-#include <QImage>
-#include <QThread>
-#include <QTimer>
-#include <QMessageBox>
-#include <QCheckBox>
+
 
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -33,7 +26,13 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     ui->connectStatus_Label->setStyleSheet("background-color: red");
 
-    ui->thresholdValue_Slider->setSliderPosition(5);
+    this->ImPrWorker->setThresholdValue(127);
+    ui->thresholdValue_Slider->setSliderPosition(127);
+
+    createImageTypesBox();
+
+    ui->groupBox->setDisabled(true);
+
 }
 
 MainWindow::~MainWindow()
@@ -42,6 +41,9 @@ MainWindow::~MainWindow()
 
     while( !imageProcessingThread->isFinished() )
         ;
+
+    ListOfCheckBoxes.~QVector();
+    ImPrWorker->~ImageProcessWorker();
 
     delete ui;
     delete imageProcessingThread;
@@ -81,6 +83,8 @@ void MainWindow::Init()
     connect(this->ImPrWorker, SIGNAL(frameHasGrabbed()), this, SLOT(displayBinaryImage()));
 
     connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)), this, SLOT(changeThreshold(int)));
+
+    connect(this->ImPrWorker, SIGNAL(connectionEstablished()), this, SLOT(receive_connectionEstablished()) );
 
     this->ImPrWorker->moveToThread(imageProcessingThread);
     timer->moveToThread(imageProcessingThread);
@@ -137,14 +141,16 @@ void MainWindow::DisplaySourceImage(cv::Mat *Image)
 
 void MainWindow::displayBinaryImage()
 {
-    if(ui->displaySourceImage_checkBox->isChecked())
-        cv::imshow("Source Image", *(this->ImPrWorker->getSourceImage()));
+    for(unsigned int i=0; i < (this->ImPrWorker->WindowNameMap.size()); i++)
+    {
+        if(this->ListOfCheckBoxes[i]->isChecked())
+        {
+            cv::namedWindow(ImPrWorker->WindowNameMap[i], cv::WINDOW_AUTOSIZE);
+            cv::imshow(ImPrWorker->WindowNameMap[i], *(this->ImPrWorker->Images[i]));
+        }
+    }
 
-    if(ui->displayGrayscaleImage_checkBox->isChecked())
-        cv::imshow("Grayscale Image", *(this->ImPrWorker->getGrayscaleImage()));
 
-    if(ui->displayEdgesImage_checkBox->isChecked())
-        cv::imshow("binary", *(this->ImPrWorker->getBinaryImage()));
 }
 
 void MainWindow::receiveConnectStatusHasChanged(const bool connectStatus)
@@ -160,6 +166,8 @@ void MainWindow::setInitConf()
 
     ShowConnectedCameras();
 
+    ui->groupBox->setDisabled(true);
+
     emit setDefaultIndex(0);
 }
 
@@ -174,11 +182,67 @@ void MainWindow::changeThreshold(int Value)
     this->ImPrWorker->setThresholdValue(Value);
 }
 
+void MainWindow::setWindowsWithImages()
+{
+    for(unsigned int i=0; i < (this->ImPrWorker->WindowNameMap.size()); i++)
+    {
+        if( !(ListOfCheckBoxes[i]->isChecked()) )
+            cv::destroyWindow(this->ImPrWorker->WindowNameMap[i]);
+        else
+            cv::namedWindow(this->ImPrWorker->WindowNameMap[i], cv::WINDOW_AUTOSIZE);
+    }
+}
+
+void MainWindow::receive_connectionEstablished()
+{
+
+    ui->groupBox->setEnabled(true);
+
+}
+
+
+void MainWindow::selectAllCheckBoxes(int status)
+{
+
+        for(unsigned int i=0; i < this->ImPrWorker->WindowNameMap.size(); i++) {
+            this->ListOfCheckBoxes[i]->setChecked(status);
+
+            if(!status)
+                cv::destroyWindow(this->ImPrWorker->WindowNameMap[i]);
+        }
+
+}
+
+
 //*************************************************
 //
 //              OTHER FUNCTIONS
 //
 //
 
+void MainWindow::createImageTypesBox()
+{
 
+    QVBoxLayout *vbox = new QVBoxLayout;
+
+    for(unsigned int i=0; i < (this->ImPrWorker->WindowNameMap.size()); i++)
+    {
+        // Create QCheckBox widget
+        QCheckBox *checkbox = new QCheckBox(this->ImPrWorker->WindowNameMap[i]);
+        // Add the created widget to the QVBoxLayout
+        vbox->addWidget(checkbox);
+        // Remember the pointer to the QCheckBox object
+        this->ListOfCheckBoxes.append(checkbox);
+        //
+        connect(checkbox, SIGNAL(pressed()), this, SLOT(setWindowsWithImages()));
+    }
+
+    QCheckBox *checkbox = new QCheckBox("Select all");
+    vbox->addWidget(checkbox);
+    this->ListOfCheckBoxes.append(checkbox);
+    connect(checkbox, SIGNAL(stateChanged(int)), this, SLOT(selectAllCheckBoxes(int)) );
+
+    vbox->addStretch(1);
+    ui->groupBox->setLayout(vbox);
+}
 

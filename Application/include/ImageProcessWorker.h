@@ -17,24 +17,29 @@ class ImageProcessWorker : public QObject , public ImageProcessModule
     Q_OBJECT
 
 public:
-    ImageProcessWorker(QObject *parent);
+    ImageProcessWorker(QObject *parent = 0);
     ~ImageProcessWorker();
+    enum ImageWindowName { SourceImage,
+                           GrayScaleImage,
+                           BoundaryImage
+                         };
+    std::map <int, const char*> WindowNameMap;
+    std::vector<cv::Mat *> Images;
 
 
+signals:
+    void sendFrame(cv::Mat *Image);
+    void connectStatusHasChanged(QString);
+    void connectionEstablished();
+    void lostConnection();
+    void cantConnectToCamera();
+    void cantGrabImage();
+    void frameHasGrabbed();
 
-
-    signals:
-        void sendFrame(cv::Mat *Image);
-        void connectStatusHasChanged(QString);
-        void lostConnection();
-        void cantConnectToCamera();
-        void cantGrabImage();
-        void frameHasGrabbed();
-
-    public slots:
-        void grabImageFromCamera();
-        void changeSetup(int CameraIndex);
-        void changeThresholdValue(int value);
+public slots:
+    void grabImageFromCamera();
+    void changeSetup(int CameraIndex);
+    void changeThresholdValue(int value);
 
 };
 
