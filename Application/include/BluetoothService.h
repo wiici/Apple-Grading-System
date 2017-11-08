@@ -3,21 +3,40 @@
 
 #include <QObject>
 #include <QBluetoothAddress>
+#include <QBluetoothDeviceDiscoveryAgent>
+#include <QBluetoothServer>
+#include <QBluetoothServiceInfo>
+#include <QBluetoothSocket>
+#include <QListWidget>
+#include <QPushButton>
+#include <QBluetoothLocalDevice>
 
 class BluetoothService : public QObject{
 
     Q_OBJECT
 
 public:
-    BluetoothService(QObject *parent = 0);
+    BluetoothService(QListWidget *ListWidget, QPushButton *ScanButton, QObject *parent = 0);
     ~BluetoothService();
 
-private:
-    QBluetoothAddress *BTadress;
-    
 public slots:
+    void scanStart();
+    void scanStop();
+    void addDeviceToListWidget(QBluetoothDeviceInfo);
+    void connectToBTdevice(QListWidgetItem*);
 
+signals:
+    void scanStopped();
 
+private:
+    QBluetoothDeviceDiscoveryAgent *discoveryBTdevicesAgent;
+    QBluetoothAddress *BTdevice;
+    QBluetoothLocalDevice *LocalDevice;
+    QListWidget *ListOfDevices;
+    QPushButton *ScanButton;
+
+    QBluetoothServer *Server;
+    QBluetoothServiceInfo *ServiceInfo;
 
 };
 

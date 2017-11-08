@@ -161,14 +161,14 @@
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>230</y>
+      <x>60</x>
+      <y>90</y>
       <width>191</width>
       <height>171</height>
      </rect>
     </property>
     <property name="title">
-     <string>GroupBox</string>
+     <string>Displayed images</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

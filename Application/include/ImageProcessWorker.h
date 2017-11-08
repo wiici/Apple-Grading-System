@@ -26,6 +26,9 @@ public:
     std::map <int, const char*> WindowNameMap;
     std::vector<cv::Mat *> Images;
 
+private:
+    bool isConnectedToCamera;
+
 
 signals:
     void sendFrame(cv::Mat *Image);
@@ -33,7 +36,6 @@ signals:
     void connectionEstablished();
     void lostConnection();
     void cantConnectToCamera();
-    void cantGrabImage();
     void frameHasGrabbed();
 
 public slots:

@@ -2,9 +2,6 @@
 #include "include/ImageProcessWorker.h"
 #include "ui_mainwindow.h"
 
-
-
-
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
@@ -19,6 +16,7 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     QMainWindow::setWindowTitle(WindowName);
 
     this->ImPrWorker = new ImageProcessWorker(parent);
+    this->BTservice = new BluetoothService(ui->listOfBTdevices_listWidget, ui->scanBT_Button);
 
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
 
@@ -29,9 +27,14 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     this->ImPrWorker->setThresholdValue(127);
     ui->thresholdValue_Slider->setSliderPosition(127);
 
-    createImageTypesBox();
+    this->createImageTypesBox();
 
     ui->groupBox->setDisabled(true);
+    ui->thresholdValue_Slider->setDisabled(true);
+
+    this->connectSignalsToSlots();
+
+    this->createImageProcessingThread();
 
 }
 
@@ -42,57 +45,11 @@ MainWindow::~MainWindow()
     while( !imageProcessingThread->isFinished() )
         ;
 
-    ListOfCheckBoxes.~QVector();
+    ListOfCheckBoxes.clear();
     ImPrWorker->~ImageProcessWorker();
 
     delete ui;
     delete imageProcessingThread;
-}
-
-void MainWindow::Init()
-{
-    // Create new thread for image processing work
-    // (streaming capture video in the background.
-    imageProcessingThread = new QThread();
-
-    QTimer *timer = new QTimer();
-    timer->setInterval(40);
-
-    //this->ImPrWorker->ImageProcessModule::setThresholdValue(249);
-
-    // Connect the signals to the property slots.
-
-    connect(timer, SIGNAL(timeout()), ImPrWorker, SLOT(grabImageFromCamera()) );
-
-    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)), this->ImPrWorker, SLOT(changeSetup(int)));
-
-    connect(this->ImPrWorker, SIGNAL(connectStatusHasChanged(QString)), ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
-
-    connect(ui->refreshList_Button, SIGNAL(pressed()), this, SLOT(ShowConnectedCameras()) );
-
-    connect(this->ImPrWorker, SIGNAL(sendFrame(cv::Mat*)), this, SLOT(DisplaySourceImage(cv::Mat*)));
-    // When the thread starts, the 'timer' will be informed and will start working too
-    connect(imageProcessingThread, SIGNAL(started()), timer, SLOT(start()));
-
-    connect(this->ImPrWorker, SIGNAL(lostConnection()), this, SLOT(setInitConf()) );
-
-    connect(this, SIGNAL(setDefaultIndex(int)), this->ImPrWorker, SLOT(changeSetup(int)));
-
-    connect(this->ImPrWorker, SIGNAL(cantConnectToCamera()), this, SLOT(informCannotConnectToCamera()) );
-
-    connect(this->ImPrWorker, SIGNAL(frameHasGrabbed()), this, SLOT(displayBinaryImage()));
-
-    connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)), this, SLOT(changeThreshold(int)));
-
-    connect(this->ImPrWorker, SIGNAL(connectionEstablished()), this, SLOT(receive_connectionEstablished()) );
-
-    this->ImPrWorker->moveToThread(imageProcessingThread);
-    timer->moveToThread(imageProcessingThread);
-
-    imageProcessingThread->start();
-
-
-
 }
 
 
@@ -133,13 +90,7 @@ void MainWindow::ShowConnectedCameras() {
 
 }
 
-
-void MainWindow::DisplaySourceImage(cv::Mat *Image)
-{
-
-}
-
-void MainWindow::displayBinaryImage()
+void MainWindow::displayImages()
 {
     for(unsigned int i=0; i < (this->ImPrWorker->WindowNameMap.size()); i++)
     {
@@ -155,8 +106,7 @@ void MainWindow::displayBinaryImage()
 
 void MainWindow::receiveConnectStatusHasChanged(const bool connectStatus)
 {
-    if( connectStatus )
-        ui->connectStatus_Label->setStyleSheet("background-color: green");
+
 }
 
 void MainWindow::setInitConf()
@@ -167,6 +117,7 @@ void MainWindow::setInitConf()
     ShowConnectedCameras();
 
     ui->groupBox->setDisabled(true);
+    ui->thresholdValue_Slider->setDisabled(true);
 
     emit setDefaultIndex(0);
 }
@@ -195,8 +146,9 @@ void MainWindow::setWindowsWithImages()
 
 void MainWindow::receive_connectionEstablished()
 {
-
+    ui->connectStatus_Label->setStyleSheet("background-color: green");
     ui->groupBox->setEnabled(true);
+    ui->thresholdValue_Slider->setEnabled(true);
 
 }
 
@@ -213,6 +165,13 @@ void MainWindow::selectAllCheckBoxes(int status)
 
 }
 
+void MainWindow::receive_lostCameraConnection()
+{
+    this->setInitConf();
+
+    QMessageBox::warning(this, "Error", "The conncetion to the camera has been lost");
+
+}
 
 //*************************************************
 //
@@ -246,3 +205,51 @@ void MainWindow::createImageTypesBox()
     ui->groupBox->setLayout(vbox);
 }
 
+
+void MainWindow::connectSignalsToSlots()
+{
+
+    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)), this->ImPrWorker, SLOT(changeSetup(int)));
+
+    connect(this->ImPrWorker, SIGNAL(connectStatusHasChanged(QString)), ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
+
+    connect(ui->refreshList_Button, SIGNAL(pressed()), this, SLOT(ShowConnectedCameras()) );
+
+    connect(this->ImPrWorker, SIGNAL(lostConnection()), this, SLOT(setInitConf()) );
+
+    connect(this, SIGNAL(setDefaultIndex(int)), this->ImPrWorker, SLOT(changeSetup(int)));
+
+    connect(this->ImPrWorker, SIGNAL(cantConnectToCamera()), this, SLOT(informCannotConnectToCamera()) );
+
+    connect(this->ImPrWorker, SIGNAL(frameHasGrabbed()), this, SLOT(displayImages()));
+
+    connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)), this, SLOT(changeThreshold(int)));
+
+    connect(this->ImPrWorker, SIGNAL(connectionEstablished()), this, SLOT(receive_connectionEstablished()) );
+
+    connect(ui->scanBT_Button, SIGNAL(pressed())
+            ,this->BTservice, SLOT(scanStart()) );
+
+    connect(this->ImPrWorker, SIGNAL(lostConnection()), this, SLOT(receive_lostCameraConnection()) );
+}
+
+
+void MainWindow::createImageProcessingThread()
+{
+    // Create new thread for image processing work
+    // (streaming capture video in the background.
+    imageProcessingThread = new QThread();
+
+    QTimer *timer = new QTimer();
+    timer->setInterval(40);
+
+    connect(timer, SIGNAL(timeout()), ImPrWorker, SLOT(grabImageFromCamera()) );
+
+    // When the thread starts, the 'timer' will be informed and will start working too
+    connect(imageProcessingThread, SIGNAL(started()), timer, SLOT(start()));
+
+    this->ImPrWorker->moveToThread(imageProcessingThread);
+    timer->moveToThread(imageProcessingThread);
+
+    imageProcessingThread->start();
+}

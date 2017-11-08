@@ -18,6 +18,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include "include/ImageProcessWorker.h"
+#include "include/BluetoothService.h"
 
 
 
@@ -32,27 +33,48 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(const QString WindowName, QWidget *parent = 0);
     ~MainWindow();
-    void Init();
 
 private:
     Ui::MainWindow *ui;
     QThread *imageProcessingThread;
     ImageProcessWorker *ImPrWorker;
     QVector<QCheckBox*> ListOfCheckBoxes;
+    BluetoothService *BTservice;
+
     void createImageTypesBox();
+    void connectSignalsToSlots();
+    void createImageProcessingThread();
 
 signals:
     void setDefaultIndex(int Index);
 public slots:
+
+    /** @brief Show a list of connected cameras.
+     *
+    */
     void ShowConnectedCameras();
-    void DisplaySourceImage(cv::Mat *Image);
     void receiveConnectStatusHasChanged(const bool connectStatus);
+    /**
+     * @brief Set a inital configuration.
+     */
     void setInitConf();
+    /**
+     * @brief Notice user about error.
+     */
     void informCannotConnectToCamera();
-    void displayBinaryImage();
+    /**
+     * @brief Display an image if a checkbox is selected.
+     */
+    void displayImages();
     void changeThreshold(int Value);
+    /**
+     * @brief Create windows where images will be displayed.
+     */
     void setWindowsWithImages();
     void receive_connectionEstablished();
+    void receive_lostCameraConnection();
     void selectAllCheckBoxes(int status);
+
+
 };
 #endif // MAINWINDOW_H

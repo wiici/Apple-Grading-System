@@ -1,1 +1,4 @@
-The purpose of this project is to create apple grading system
+# Apple sorting system based on image processing
+
+=====
+

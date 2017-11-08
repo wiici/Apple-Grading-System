@@ -8,7 +8,8 @@
 //
 
 ImageProcessWorker::ImageProcessWorker(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    isConnectedToCamera(false)
 {
     ImageProcessModule();
 
@@ -29,7 +30,7 @@ ImageProcessWorker::~ImageProcessWorker()
 {
     this->~ImageProcessModule();
     WindowNameMap.clear();
-    Images.~vector();
+    Images.clear();
 }
 
 //*************************************************
@@ -50,8 +51,12 @@ void ImageProcessWorker::grabImageFromCamera()
         emit frameHasGrabbed();
 
     }
-    else
-        emit cantGrabImage();
+    else {
+        if(this->isConnectedToCamera) {
+            emit lostConnection();
+            this->isConnectedToCamera = false;
+        }
+        }
 }
 
 
@@ -63,6 +68,7 @@ void ImageProcessWorker::changeSetup(int CameraIndex)
         return;
 
     if( this->connectToCamera(CameraIndex) ) {
+        this->isConnectedToCamera = true;
         emit connectStatusHasChanged("background-color: green");
         emit connectionEstablished();
     }
