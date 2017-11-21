@@ -19,6 +19,7 @@
 #include <opencv2/highgui.hpp>
 #include "include/ImageProcessWorker.h"
 #include "include/BluetoothService.h"
+#include "include/UARTservice.h"
 
 
 
@@ -40,6 +41,7 @@ private:
     ImageProcessWorker *ImPrWorker;
     QVector<QCheckBox*> ListOfCheckBoxes;
     BluetoothService *BTservice;
+    UARTservice *UART;
 
     void createImageTypesBox();
     void connectSignalsToSlots();

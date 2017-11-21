@@ -10,6 +10,8 @@
 #include <QListWidget>
 #include <QPushButton>
 #include <QBluetoothLocalDevice>
+#include <QMenu>
+#include <QLatin1String>
 
 class BluetoothService : public QObject{
 
@@ -19,14 +21,25 @@ public:
     BluetoothService(QListWidget *ListWidget, QPushButton *ScanButton, QObject *parent = 0);
     ~BluetoothService();
 
+    int startCommunication();
+    void stopCommunication();
+
 public slots:
     void scanStart();
     void scanStop();
     void addDeviceToListWidget(QBluetoothDeviceInfo);
     void connectToBTdevice(QListWidgetItem*);
+    void displayMenu(const QPoint &Position);
+
+    void sendMessage(QString* Message);
+    void communicationEstablished();
+    void readDataFromSocket();
 
 signals:
     void scanStopped();
+
+    void receivedMessage(QString *Message);
+
 
 private:
     QBluetoothDeviceDiscoveryAgent *discoveryBTdevicesAgent;
@@ -35,8 +48,13 @@ private:
     QListWidget *ListOfDevices;
     QPushButton *ScanButton;
 
+    QBluetoothSocket *Socket;
     QBluetoothServer *Server;
     QBluetoothServiceInfo *ServiceInfo;
+
+    static QLatin1String Uuid;
+
+    void setServiceInfo();
 
 };
 

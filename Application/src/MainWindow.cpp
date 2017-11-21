@@ -17,6 +17,7 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     this->ImPrWorker = new ImageProcessWorker(parent);
     this->BTservice = new BluetoothService(ui->listOfBTdevices_listWidget, ui->scanBT_Button);
+    this->UART = new UARTservice(ui->listOfSerialPorts_listWidget);
 
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
 
@@ -155,7 +156,7 @@ void MainWindow::receive_connectionEstablished()
 
 void MainWindow::selectAllCheckBoxes(int status)
 {
-
+    qWarning() << "TEST dsad sd ads sd a";
         for(unsigned int i=0; i < this->ImPrWorker->WindowNameMap.size(); i++) {
             this->ListOfCheckBoxes[i]->setChecked(status);
 
@@ -231,6 +232,8 @@ void MainWindow::connectSignalsToSlots()
             ,this->BTservice, SLOT(scanStart()) );
 
     connect(this->ImPrWorker, SIGNAL(lostConnection()), this, SLOT(receive_lostCameraConnection()) );
+
+    connect(ui->searchSerialPorts_pushButton, SIGNAL(pressed()), this->UART, SLOT(searchSerialPorts()) );
 }
 
 
