@@ -17,7 +17,8 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     this->ImPrWorker = new ImageProcessWorker(parent);
     this->BTservice = new BluetoothService(ui->listOfBTdevices_listWidget, ui->scanBT_Button);
-    this->UART = new UARTservice(ui->listOfSerialPorts_listWidget);
+    this->UART = new UARTservice(ui->textEdit, ui->listOfSerialPorts_listWidget);
+    this->motor = new Motor(ui->motor_ON_OFF_pushButton);
 
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
 
@@ -174,6 +175,11 @@ void MainWindow::receive_lostCameraConnection()
 
 }
 
+void MainWindow::cantFindSerialPorts()
+{
+    QMessageBox::warning(this, "Warning", "Can't find any serial port");
+}
+
 //*************************************************
 //
 //              OTHER FUNCTIONS
@@ -234,6 +240,15 @@ void MainWindow::connectSignalsToSlots()
     connect(this->ImPrWorker, SIGNAL(lostConnection()), this, SLOT(receive_lostCameraConnection()) );
 
     connect(ui->searchSerialPorts_pushButton, SIGNAL(pressed()), this->UART, SLOT(searchSerialPorts()) );
+
+    connect(this->UART, SIGNAL(cantFindSerialPorts()), this, SLOT(cantFindSerialPorts()) );
+
+    connect(ui->searchSerialPorts_pushButton_2, SIGNAL(pressed()), this->UART, SLOT(sendMessage()) );
+
+    connect(this->UART, SIGNAL(UARTconnected()), this->motor, SLOT(UARTconnected()));
+
+    connect(this->UART, SIGNAL(UARTdisconnected()), this, SLOT(UARTdisconnected()) );
+
 }
 
 
@@ -255,4 +270,11 @@ void MainWindow::createImageProcessingThread()
     timer->moveToThread(imageProcessingThread);
 
     imageProcessingThread->start();
+}
+
+
+void MainWindow::UARTdisconnected()
+{
+    QMessageBox::warning(this, "Error", "Serial port has been closed");;
+
 }

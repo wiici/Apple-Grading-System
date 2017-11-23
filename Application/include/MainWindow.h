@@ -20,6 +20,7 @@
 #include "include/ImageProcessWorker.h"
 #include "include/BluetoothService.h"
 #include "include/UARTservice.h"
+#include "include/motor.h"
 
 
 
@@ -42,6 +43,7 @@ private:
     QVector<QCheckBox*> ListOfCheckBoxes;
     BluetoothService *BTservice;
     UARTservice *UART;
+    Motor *motor;
 
     void createImageTypesBox();
     void connectSignalsToSlots();
@@ -76,6 +78,10 @@ public slots:
     void receive_connectionEstablished();
     void receive_lostCameraConnection();
     void selectAllCheckBoxes(int status);
+    void cantFindSerialPorts();
+
+private slots:
+    void UARTdisconnected();
 
 
 };
