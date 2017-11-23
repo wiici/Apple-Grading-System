@@ -1,17 +1,27 @@
 #include "include/motor.h"
-#include <unistd.h>
+#include "include/UARTservice.h"
+
 #include <QTimer>
 #include <QPalette>
+#include <QDebug>
 
-Motor::Motor(QPushButton *Motor_ON_OFF_BUtton, QObject *parent) :
+Motor::Motor(QPushButton *Motor_ON_OFF_BUtton, QSlider *MotorSpeed, QObject *parent) :
     QObject(parent),
-    Motor_ON_OFF_BUtton(Motor_ON_OFF_BUtton)
+    Motor_ON_OFF_BUtton(Motor_ON_OFF_BUtton),
+    MotorSpeed(MotorSpeed)
 {
-    // motor off
+    // motor off at the beginnig
     this->isEnable = false;
+    // disable widgets which need the connection to the serial port
     this->Motor_ON_OFF_BUtton->setDisabled(true);
-    connect(this->Motor_ON_OFF_BUtton, SIGNAL(pressed()), this, SLOT(ON_OFF_BUtton_Pressed()) );
+    this->MotorSpeed->setDisabled(true);
 
+    this->MotorSpeed->setRange(this->minSpeed, this->maxSpeed);
+    this->MotorSpeed->setValue(150);
+
+    // when pressed the button change the background and the flag (isEnable)
+    connect(this->Motor_ON_OFF_BUtton, SIGNAL(pressed()), this, SLOT(ON_OFF_BUtton_Pressed()) );
+    connect(this->MotorSpeed, SIGNAL(sliderReleased()), this, SLOT(setSpeed()));
 }
 
 Motor::~Motor()
@@ -24,23 +34,27 @@ Motor::~Motor()
 
 void Motor::setSpeed()
 {
+    qWarning() << "Motor::setSpeed()_Speed:" << this->MotorSpeed->value();
 
-
-
-
-
+    // emit the signal to the UARTserive which will create the message
+    // and send it to the device via serial port
+    emit sendMessage(&MotorCommand,
+                     &SetSpeedArgument,
+                     MotorSpeed->value());
 }
 
 
 void Motor::UARTconnected()
 {
+    // enable widgets which need the connection to the serial port
     this->Motor_ON_OFF_BUtton->setEnabled(true);
+    this->MotorSpeed->setEnabled(true);
 
+    // set property background colour
     if(this->isEnable)
         this->Motor_ON_OFF_BUtton->setStyleSheet("background: green");
     else
         this->Motor_ON_OFF_BUtton->setStyleSheet("background: red");
-
 }
 
 
@@ -49,8 +63,10 @@ void Motor::UARTconnected()
 
 void Motor::ON_OFF_BUtton_Pressed()
 {
-    this->Motor_ON_OFF_BUtton->setDisabled(true);
+    // Disable button for a moment
+    this->Motor_ON_OFF_BUtton->blockSignals(true);
 
+    // change the flags and set property background colour
     if(this->isEnable) {
         this->isEnable = false;
         this->Motor_ON_OFF_BUtton->setStyleSheet("background: red");
@@ -58,6 +74,21 @@ void Motor::ON_OFF_BUtton_Pressed()
         this->isEnable = true;
         this->Motor_ON_OFF_BUtton->setStyleSheet("background: green");
     }
-    usleep(1000);
-    this->Motor_ON_OFF_BUtton->setEnabled(true);
+
+    qWarning() << "Motor::ON_OFF_BUtton_Pressed()_isEnabled:" << this->isEnable;
+
+    // emit the signal to the UARTserive which will create the message
+    // and send it to the device via serial port
+    emit sendMessage(&MotorCommand,
+                     &MotorOnOffArgument,
+                     (int)isEnable);
+
+    // enable the button after some time to avoid frequent switching
+    QTimer::singleShot(MotorOnOffDelay, this, SLOT(enableMotorOnOffButton()));
+}
+
+
+void Motor::enableMotorOnOffButton()
+{
+    this->Motor_ON_OFF_BUtton->blockSignals(false);
 }

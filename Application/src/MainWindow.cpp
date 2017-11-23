@@ -18,7 +18,7 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     this->ImPrWorker = new ImageProcessWorker(parent);
     this->BTservice = new BluetoothService(ui->listOfBTdevices_listWidget, ui->scanBT_Button);
     this->UART = new UARTservice(ui->textEdit, ui->listOfSerialPorts_listWidget);
-    this->motor = new Motor(ui->motor_ON_OFF_pushButton);
+    this->motor = new Motor(ui->motor_ON_OFF_pushButton, ui->motorSpeed_Slider);
 
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
 
@@ -216,39 +216,55 @@ void MainWindow::createImageTypesBox()
 void MainWindow::connectSignalsToSlots()
 {
 
-    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)), this->ImPrWorker, SLOT(changeSetup(int)));
+    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)),
+            this->ImPrWorker, SLOT(changeSetup(int)));
 
-    connect(this->ImPrWorker, SIGNAL(connectStatusHasChanged(QString)), ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
+    connect(this->ImPrWorker, SIGNAL(connectStatusHasChanged(QString)),
+            ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
 
-    connect(ui->refreshList_Button, SIGNAL(pressed()), this, SLOT(ShowConnectedCameras()) );
+    connect(ui->refreshList_Button, SIGNAL(pressed()),
+            this, SLOT(ShowConnectedCameras()) );
 
-    connect(this->ImPrWorker, SIGNAL(lostConnection()), this, SLOT(setInitConf()) );
+    connect(this->ImPrWorker, SIGNAL(lostConnection()),
+            this, SLOT(setInitConf()) );
 
-    connect(this, SIGNAL(setDefaultIndex(int)), this->ImPrWorker, SLOT(changeSetup(int)));
+    connect(this, SIGNAL(setDefaultIndex(int)),
+            this->ImPrWorker, SLOT(changeSetup(int)));
 
-    connect(this->ImPrWorker, SIGNAL(cantConnectToCamera()), this, SLOT(informCannotConnectToCamera()) );
+    connect(this->ImPrWorker, SIGNAL(cantConnectToCamera()),
+            this, SLOT(informCannotConnectToCamera()) );
 
-    connect(this->ImPrWorker, SIGNAL(frameHasGrabbed()), this, SLOT(displayImages()));
+    connect(this->ImPrWorker, SIGNAL(frameHasGrabbed()),
+            this, SLOT(displayImages()));
 
-    connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)), this, SLOT(changeThreshold(int)));
+    connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(changeThreshold(int)));
 
-    connect(this->ImPrWorker, SIGNAL(connectionEstablished()), this, SLOT(receive_connectionEstablished()) );
+    connect(this->ImPrWorker, SIGNAL(connectionEstablished()),
+            this, SLOT(receive_connectionEstablished()) );
 
-    connect(ui->scanBT_Button, SIGNAL(pressed())
-            ,this->BTservice, SLOT(scanStart()) );
+    connect(ui->scanBT_Button, SIGNAL(pressed()),
+            this->BTservice, SLOT(scanStart()) );
 
-    connect(this->ImPrWorker, SIGNAL(lostConnection()), this, SLOT(receive_lostCameraConnection()) );
+    connect(this->ImPrWorker, SIGNAL(lostConnection()),
+            this, SLOT(receive_lostCameraConnection()) );
 
-    connect(ui->searchSerialPorts_pushButton, SIGNAL(pressed()), this->UART, SLOT(searchSerialPorts()) );
+    connect(ui->searchSerialPorts_pushButton, SIGNAL(pressed()),
+            this->UART, SLOT(searchSerialPorts()) );
 
-    connect(this->UART, SIGNAL(cantFindSerialPorts()), this, SLOT(cantFindSerialPorts()) );
+    connect(this->UART, SIGNAL(cantFindSerialPorts()),
+            this, SLOT(cantFindSerialPorts()) );
 
-    connect(ui->searchSerialPorts_pushButton_2, SIGNAL(pressed()), this->UART, SLOT(sendMessage()) );
+    //connect(ui->searchSerialPorts_pushButton_2, SIGNAL(pressed()), this->UART, SLOT(sendMessage()) );
 
-    connect(this->UART, SIGNAL(UARTconnected()), this->motor, SLOT(UARTconnected()));
+    connect(this->UART, SIGNAL(UARTconnected()),
+            this->motor, SLOT(UARTconnected()));
 
-    connect(this->UART, SIGNAL(UARTdisconnected()), this, SLOT(UARTdisconnected()) );
+    connect(this->UART, SIGNAL(UARTdisconnected()),
+            this, SLOT(UARTdisconnected()) );
 
+    connect(this->motor, SIGNAL(sendMessage(const QString*,const QString*,int)),
+            this->UART, SLOT(sendMessage(const QString*,const QString*,int)));
 }
 
 

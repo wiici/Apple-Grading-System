@@ -66,25 +66,28 @@ void UARTservice::searchSerialPorts()
 }
 
 
-void UARTservice::sendMessage()
+void UARTservice::sendMessage(const QString *Command, const QString *Argument, const int Value)
 {
-
-    QString msg = this->testText->toPlainText();
-//QString msg = "LD+ON=5000";
-    QString test(50, ' ');
-    qWarning() << test;
-
-    QString test2("costam");
-    test.replace(0, msg.size(), msg);
-    qWarning() << "test-> " << test;
+    // check if the serial port is open
     if( !this->SelectedPort->isOpen() ) {
-        qWarning() << "port not open";
+        qWarning() << "sendMessage->Serial port is not open";
+        emit UARTdisconnected();
         return;
     }
+    QString Message = createMessage(Command, Argument, Value);
+    QString msg = this->testText->toPlainText();
+
+    qWarning() << "UARTserivce::sendMessage()_Message:" << Message;
+
+    //QString test(50, ' ');
+    //qWarning() << test;
+
+    //QString test2("costam");
+    //test.replace(0, msg.size(), msg);
+    //qWarning() << "sendMessage():" << test;
 
     this->SelectedPort->write(msg.toUtf8());
 
-    qWarning() << "TEST send message";
 }
 
 
@@ -134,9 +137,10 @@ void UARTservice::newPortSelected(QListWidgetItem* SelectedItem)
 
 void UARTservice::receiveAboutToClosePort()
 {
+    if( this->SelectedPort->isOpen())
+        this->SelectedPort->close();
+
     emit  UARTdisconnected();
-
-
 }
 
 
@@ -149,6 +153,14 @@ int UARTservice::configureSerialPort()
 
 }
 
+QString UARTservice::createMessage(const QString *Command, const QString *Argument, const int Value)
+{
+    QString SpeedValue = QString("%1").arg(Value, this->NumberOfDigits, 10, QChar('0'));
+
+    QString Message = *Command + this->CommandSign + *Argument + this->ValueSign + SpeedValue;
+
+    return Message;
+}
 
 
 
