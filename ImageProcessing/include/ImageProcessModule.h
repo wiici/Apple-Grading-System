@@ -29,6 +29,7 @@ private:
 
 	cv::VideoCapture* Camera;
 
+	// image processing parameters
 	int ThresholdValue;
 
 public:
@@ -54,6 +55,13 @@ public:
 	 * @param Value to set
 	 */
 	void setThresholdValue(int Value);
+
+	bool setCameraBrightness(double Value);
+
+	bool setCameraSaturation(double Value);
+
+	bool setCameraContrast(double Value);
+
 
 	/**
 	 * @brief Getter
@@ -90,6 +98,19 @@ public:
 	 * @return Get the pointer to the source image from the camera.
 	 */
 	cv::VideoCapture* getCamera();
+
+	int getCameraFrameWidth();
+
+	int getCameraFrameHeight();
+
+	int getCameraFrameRate();
+
+	double getCameraBrightness();
+
+	double getCameraSaturation();
+
+	double getCameraContrast();
+
 
 	/**
 	 * @brief Connect to the attached camera.

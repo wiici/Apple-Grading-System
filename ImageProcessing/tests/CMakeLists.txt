@@ -1,15 +1,18 @@
 # src/tests/CMakeLists.txt
-include(ExternalProject)
+#include(ExternalProject)
 
-ExternalProject_Add(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION}
-)
+
+#ExternalProject_Add(
+#    googletest
+#    GIT_REPOSITORY https://github.com/google/googletest
+#    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION}
+#)
+
 include_directories(${EXTERNAL_INSTALL_LOCATION}/include)
 link_directories(${EXTERNAL_INSTALL_LOCATION}/lib)
 
 find_package(OpenCV REQUIRED)
+find_package(Qt5Widgets)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 file(GLOB TESTS "main.cpp")

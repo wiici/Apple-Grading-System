@@ -49,6 +49,22 @@ void ImageProcessModule::setThresholdValue(int Value)
 	this->ThresholdValue = Value;
 }
 
+bool ImageProcessModule::setCameraBrightness(double Value)
+{
+	return this->Camera->set(cv::CAP_PROP_BRIGHTNESS, Value);
+}
+
+bool ImageProcessModule::setCameraSaturation(double Value)
+{
+	return this->Camera->set(cv::CAP_PROP_SATURATION, Value);
+}
+
+bool ImageProcessModule::setCameraContrast(double Value)
+{
+	return this->Camera->set(cv::CAP_PROP_CONTRAST, Value);
+}
+
+
 /*
  *
  * 			GETTERS
@@ -75,6 +91,36 @@ cv::Mat* ImageProcessModule::getBinaryImage() {
 
 cv::VideoCapture* ImageProcessModule::getCamera() {
 	return Camera;
+}
+
+int ImageProcessModule::getCameraFrameWidth()
+{
+	return this->Camera->get(cv::CAP_PROP_FRAME_WIDTH);
+}
+
+int ImageProcessModule::getCameraFrameHeight()
+{
+	return this->Camera->get(cv::CAP_PROP_FRAME_HEIGHT);
+}
+
+int ImageProcessModule::getCameraFrameRate()
+{
+	return this->Camera->get(cv::CAP_PROP_FPS);
+}
+
+double ImageProcessModule::getCameraBrightness()
+{
+	return this->Camera->get(cv::CAP_PROP_BRIGHTNESS);
+}
+
+double ImageProcessModule::getCameraSaturation()
+{
+	return this->Camera->get(cv::CAP_PROP_SATURATION);
+}
+
+double ImageProcessModule::getCameraContrast()
+{
+	return this->Camera->get(cv::CAP_PROP_CONTRAST);
 }
 
 
