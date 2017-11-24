@@ -7,6 +7,8 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 
+#include <QLabel>
+
 MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -15,7 +17,10 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     QMainWindow::setWindowTitle(WindowName);
 
-    this->ImPrWorker = new ImageProcessWorker(parent);
+    this->ImPrWorker = new ImageProcessWorker(ui->brightnessValue_Slider,
+                                              ui->saturationValue_Slider,
+                                              ui->contrastValue_Slider,
+                                              parent);
     this->BTservice = new BluetoothService(ui->listOfBTdevices_listWidget, ui->scanBT_Button);
     this->UART = new UARTservice(ui->textEdit, ui->listOfSerialPorts_listWidget);
     this->motor = new Motor(ui->motor_ON_OFF_pushButton, ui->motorSpeed_Slider);
@@ -31,12 +36,16 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     this->createImageTypesBox();
 
-    ui->groupBox->setDisabled(true);
+    ui->ImageTypes_groupBox->setDisabled(true);
+    ui->CameraParameters_groupBox->setDisabled(true);
     ui->thresholdValue_Slider->setDisabled(true);
 
     this->connectSignalsToSlots();
 
     this->createImageProcessingThread();
+    this->createCameraParametersBox();
+
+
 
 }
 
@@ -118,7 +127,8 @@ void MainWindow::setInitConf()
 
     ShowConnectedCameras();
 
-    ui->groupBox->setDisabled(true);
+    ui->ImageTypes_groupBox->setDisabled(true);
+    ui->CameraParameters_groupBox->setDisabled(true);
     ui->thresholdValue_Slider->setDisabled(true);
 
     emit setDefaultIndex(0);
@@ -146,10 +156,22 @@ void MainWindow::setWindowsWithImages()
     }
 }
 
-void MainWindow::receive_connectionEstablished()
+void MainWindow::receive_cameraConnectionEstablished()
 {
+    // Create string with information about camera connection and camera's parameters
+    QString CameraParameters;
+    CameraParameters  = QString("Connected to the camera (%1x%2 %3FPS)")
+            .arg(this->ImPrWorker->getCameraFrameWidth())
+            .arg(this->ImPrWorker->getCameraFrameHeight())
+            .arg(this->ImPrWorker->getCameraFrameRate());
+
+    QMessageBox::information(this, "Info", CameraParameters);
+
+
     ui->connectStatus_Label->setStyleSheet("background-color: green");
-    ui->groupBox->setEnabled(true);
+    // Enable widgets working with camera
+    ui->ImageTypes_groupBox->setEnabled(true);
+    ui->CameraParameters_groupBox->setEnabled(true);
     ui->thresholdValue_Slider->setEnabled(true);
 
 }
@@ -158,12 +180,12 @@ void MainWindow::receive_connectionEstablished()
 void MainWindow::selectAllCheckBoxes(int status)
 {
     qWarning() << "TEST dsad sd ads sd a";
-        for(unsigned int i=0; i < this->ImPrWorker->WindowNameMap.size(); i++) {
-            this->ListOfCheckBoxes[i]->setChecked(status);
+    for(unsigned int i=0; i < this->ImPrWorker->WindowNameMap.size(); i++) {
+        this->ListOfCheckBoxes[i]->setChecked(status);
 
-            if(!status)
-                cv::destroyWindow(this->ImPrWorker->WindowNameMap[i]);
-        }
+        if(!status)
+            cv::destroyWindow(this->ImPrWorker->WindowNameMap[i]);
+    }
 
 }
 
@@ -199,7 +221,7 @@ void MainWindow::createImageTypesBox()
         vbox->addWidget(checkbox);
         // Remember the pointer to the QCheckBox object
         this->ListOfCheckBoxes.append(checkbox);
-        //
+        // if the button pressed then show/hide the image type
         connect(checkbox, SIGNAL(pressed()), this, SLOT(setWindowsWithImages()));
     }
 
@@ -209,9 +231,29 @@ void MainWindow::createImageTypesBox()
     connect(checkbox, SIGNAL(stateChanged(int)), this, SLOT(selectAllCheckBoxes(int)) );
 
     vbox->addStretch(1);
-    ui->groupBox->setLayout(vbox);
+    ui->ImageTypes_groupBox->setLayout(vbox);
 }
 
+
+void MainWindow::createCameraParametersBox()
+{
+    QVBoxLayout *vbox = new QVBoxLayout;
+
+    QLabel *BrightnessLabel = new QLabel("Brightness");
+    vbox->addWidget(BrightnessLabel);
+    vbox->addWidget(ui->brightnessValue_Slider);
+
+    QLabel *SaturationLabel = new QLabel("Saturation");
+    vbox->addWidget(SaturationLabel);
+    vbox->addWidget(ui->saturationValue_Slider);
+
+    QLabel *ContrastLabel = new QLabel("Contrast");
+    vbox->addWidget(ContrastLabel);
+    vbox->addWidget(ui->contrastValue_Slider);
+
+    vbox->addStretch(1);
+    ui->CameraParameters_groupBox->setLayout(vbox);
+}
 
 void MainWindow::connectSignalsToSlots()
 {
@@ -241,7 +283,7 @@ void MainWindow::connectSignalsToSlots()
             this, SLOT(changeThreshold(int)));
 
     connect(this->ImPrWorker, SIGNAL(connectionEstablished()),
-            this, SLOT(receive_connectionEstablished()) );
+            this, SLOT(receive_cameraConnectionEstablished()) );
 
     connect(ui->scanBT_Button, SIGNAL(pressed()),
             this->BTservice, SLOT(scanStart()) );
@@ -287,6 +329,9 @@ void MainWindow::createImageProcessingThread()
 
     imageProcessingThread->start();
 }
+
+
+
 
 
 void MainWindow::UARTdisconnected()

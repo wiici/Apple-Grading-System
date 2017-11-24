@@ -6,7 +6,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <QTextEdit>
-
+#include <QSlider>
 #include <ImageProcessModule.h>
 
 // Class ImageProcessWorker inherits from QObject
@@ -17,7 +17,7 @@ class ImageProcessWorker : public QObject , public ImageProcessModule
     Q_OBJECT
 
 public:
-    ImageProcessWorker(QObject *parent = 0);
+    ImageProcessWorker(QSlider *BrightnessSlider, QSlider *SaturationSlider, QSlider *ContrastSlider, QObject *parent = 0);
     ~ImageProcessWorker();
     enum ImageWindowName { SourceImage,
                            GrayScaleImage,
@@ -28,7 +28,13 @@ public:
 
 private:
     bool isConnectedToCamera;
+    QSlider *BrightnessSlider;
+    QSlider *SaturationSlider;
+    QSlider *ContrastSlider;
+    const int SlidersRange = 1000.0;
 
+    void setSlidersRange();
+    void setSlidersInitValue();
 
 signals:
     void sendFrame(cv::Mat *Image);
@@ -42,6 +48,14 @@ public slots:
     void grabImageFromCamera();
     void changeSetup(int CameraIndex);
     void changeThresholdValue(int value);
+
+private slots:
+    void enableWidgets();
+    void disableWidgets();
+    void changeCameraBrightness();
+    void changeCameraSaturation();
+    void changeCameraContrast();
+
 
 };
 

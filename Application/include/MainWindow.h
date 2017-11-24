@@ -48,6 +48,7 @@ private:
     void createImageTypesBox();
     void connectSignalsToSlots();
     void createImageProcessingThread();
+    void createCameraParametersBox();
 
 signals:
     void setDefaultIndex(int Index);
@@ -75,7 +76,7 @@ public slots:
      * @brief Create windows where images will be displayed.
      */
     void setWindowsWithImages();
-    void receive_connectionEstablished();
+    void receive_cameraConnectionEstablished();
     void receive_lostCameraConnection();
     void selectAllCheckBoxes(int status);
     void cantFindSerialPorts();

@@ -66,7 +66,7 @@ void Motor::ON_OFF_BUtton_Pressed()
     // Disable button for a moment
     this->Motor_ON_OFF_BUtton->blockSignals(true);
 
-    // change the flags and set property background colour
+    // change the flags and set propertyl background colour
     if(this->isEnable) {
         this->isEnable = false;
         this->Motor_ON_OFF_BUtton->setStyleSheet("background: red");
