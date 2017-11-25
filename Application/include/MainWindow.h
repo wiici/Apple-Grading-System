@@ -36,6 +36,7 @@ public:
     explicit MainWindow(const QString WindowName, QWidget *parent = 0);
     ~MainWindow();
 
+
 private:
     Ui::MainWindow *ui;
     QThread *imageProcessingThread;
@@ -49,16 +50,17 @@ private:
     void connectSignalsToSlots();
     void createImageProcessingThread();
     void createCameraParametersBox();
+    void createImageProcessingVarablesBox();
+    void createDeviceVariablesBox();
 
 signals:
-    void setDefaultIndex(int Index);
+    void setDefaultIndex(QString InitValue);
 public slots:
 
     /** @brief Show a list of connected cameras.
      *
     */
     void ShowConnectedCameras();
-    void receiveConnectStatusHasChanged(const bool connectStatus);
     /**
      * @brief Set a inital configuration.
      */
@@ -83,6 +85,7 @@ public slots:
 
 private slots:
     void UARTdisconnected();
+    void UARTconnected();
 
 
 };

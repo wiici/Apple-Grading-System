@@ -41,15 +41,15 @@ private slots:
 
 
 private:
-    QListWidget *ListOfSerialPorts;
     QTextEdit *testText;
+    QListWidget *ListOfSerialPorts;
+    int BaudRate;
     QList<QSerialPortInfo> AvailablePorts;
     QSerialPort *SelectedPort;
     QSerialPortInfo *SelectedSerialPortInfo;
 
-    int BaudRate;
 
-    int configureSerialPort();
+    void configureSerialPort();
     QString createMessage(const QString *Command, const QString *Argument, const int Value);
 
 };

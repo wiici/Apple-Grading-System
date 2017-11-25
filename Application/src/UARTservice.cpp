@@ -7,10 +7,9 @@
 
 UARTservice::UARTservice(QTextEdit *testText, QListWidget *ListOfSerialPorts,int InitBaudRate, QObject *parent) :
     QObject(parent),
+    testText(testText),
     ListOfSerialPorts(ListOfSerialPorts),
-    BaudRate(InitBaudRate),
-    testText(testText)
-
+    BaudRate(InitBaudRate)
 {
     this->SelectedPort = new QSerialPort;
 
@@ -18,8 +17,6 @@ UARTservice::UARTservice(QTextEdit *testText, QListWidget *ListOfSerialPorts,int
             ,this, SLOT(newPortSelected(QListWidgetItem*)) );
 
     connect(this->SelectedPort, SIGNAL(readyRead()), this, SLOT(receiveMessage()));
-
-
 }
 
 
@@ -69,7 +66,7 @@ void UARTservice::searchSerialPorts()
 void UARTservice::sendMessage(const QString *Command, const QString *Argument, const int Value)
 {
     // check if the serial port is open
-    if( !this->SelectedPort->isOpen() ) {
+    if( !this->SelectedPort->isOpen()) {
         qWarning() << "sendMessage->Serial port is not open";
         emit UARTdisconnected();
         return;
@@ -102,6 +99,8 @@ QString UARTservice::receiveMessage()
     qWarning() << "REVEIVED MESSAGE: " << tmp;
 
     this->SelectedPort->waitForReadyRead(5000);
+
+    return this->SelectedPort->readAll();
 
 }
 
@@ -144,7 +143,7 @@ void UARTservice::receiveAboutToClosePort()
 }
 
 
-int UARTservice::configureSerialPort()
+void UARTservice::configureSerialPort()
 {
     this->SelectedPort->setBaudRate(this->BaudRate);
     this->SelectedPort->setDataBits(QSerialPort::Data8);

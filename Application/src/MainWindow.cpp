@@ -21,15 +21,15 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
                                               ui->saturationValue_Slider,
                                               ui->contrastValue_Slider,
                                               parent);
-    this->BTservice = new BluetoothService(ui->listOfBTdevices_listWidget, ui->scanBT_Button);
-    this->UART = new UARTservice(ui->textEdit, ui->listOfSerialPorts_listWidget);
-    this->motor = new Motor(ui->motor_ON_OFF_pushButton, ui->motorSpeed_Slider);
+    this->BTservice = new BluetoothService(ui->listOfBTdevices_listWidget, ui->scanBT_Button, parent);
+    this->UART = new UARTservice(ui->textEdit, ui->listOfSerialPorts_listWidget, 115200 ,parent);
+    this->motor = new Motor(ui->motor_ON_OFF_pushButton, ui->motorSpeed_Slider, parent);
 
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
 
     ShowConnectedCameras();
 
-    ui->connectStatus_Label->setStyleSheet("background-color: red");
+
 
     this->ImPrWorker->setThresholdValue(127);
     ui->thresholdValue_Slider->setSliderPosition(127);
@@ -38,12 +38,14 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     ui->ImageTypes_groupBox->setDisabled(true);
     ui->CameraParameters_groupBox->setDisabled(true);
-    ui->thresholdValue_Slider->setDisabled(true);
+    ui->ImageProcessingVariables_groupBox->setDisabled(true);
+    ui->DeviceVariables_groupBox->setDisabled(true);
 
     this->connectSignalsToSlots();
 
     this->createImageProcessingThread();
     this->createCameraParametersBox();
+    this->createImageProcessingVarablesBox();
 
 
 
@@ -76,12 +78,12 @@ void MainWindow::ShowConnectedCameras() {
     // Each attached camera has own folder (e.g. video0 - the number depends on
     // the order in which camera has been connected to the system)
     QString Path = "/sys/class/video4linux/video";
-    unsigned int Counter = 0;
+
 
     // Create the oject and pass the entire path of 'name' file which
     // contains the product name of the camera.
-    QFile File( Path + QString::number(Counter) + "/name");
-
+    //QFile File( Path + QString::number(Counter) + "/name");
+    QFile File;
     // The list will be filled again so remove all items.
     ui->ListOfCameras_ComboBox->clear();
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
@@ -89,16 +91,18 @@ void MainWindow::ShowConnectedCameras() {
     // Useful in read lines from file
     QTextStream FileStream(&File);
 
-    while( File.open(QIODevice::ReadOnly) ) {
+    // max 64 devices in the v4l interface
+    for(unsigned int Counter = 0; Counter < 64; Counter++) {
+File.setFileName(Path + QString::number(Counter) + "/name");
+        if( File.open(QIODevice::ReadOnly) ) {
+            QString ItemText = QString("%1 %2").arg(Counter).arg(FileStream.readLine());
+            // Add to the ComboBox name of device
+            ui->ListOfCameras_ComboBox->addItem( ItemText );
 
-        // Add to the ComboBox name of device
-        ui->ListOfCameras_ComboBox->addItem( FileStream.readLine() );
+            File.close();
 
-        File.close();
-        Counter++;
-        File.setFileName(Path + QString::number(Counter) + "/name");
+        }
     }
-
 }
 
 void MainWindow::displayImages()
@@ -115,23 +119,15 @@ void MainWindow::displayImages()
 
 }
 
-void MainWindow::receiveConnectStatusHasChanged(const bool connectStatus)
-{
-
-}
-
 void MainWindow::setInitConf()
 {
-    // Set red color of connection status to inform
-    ui->connectStatus_Label->setStyleSheet("background-color: red");
-
     ShowConnectedCameras();
 
     ui->ImageTypes_groupBox->setDisabled(true);
     ui->CameraParameters_groupBox->setDisabled(true);
-    ui->thresholdValue_Slider->setDisabled(true);
+    ui->ImageProcessingVariables_groupBox->setDisabled(true);
 
-    emit setDefaultIndex(0);
+    emit setDefaultIndex("Select camera");
 }
 
 void MainWindow::informCannotConnectToCamera()
@@ -168,12 +164,11 @@ void MainWindow::receive_cameraConnectionEstablished()
     QMessageBox::information(this, "Info", CameraParameters);
 
 
-    ui->connectStatus_Label->setStyleSheet("background-color: green");
+
     // Enable widgets working with camera
     ui->ImageTypes_groupBox->setEnabled(true);
     ui->CameraParameters_groupBox->setEnabled(true);
-    ui->thresholdValue_Slider->setEnabled(true);
-
+    ui->ImageProcessingVariables_groupBox->setEnabled(true);
 }
 
 
@@ -255,14 +250,38 @@ void MainWindow::createCameraParametersBox()
     ui->CameraParameters_groupBox->setLayout(vbox);
 }
 
+void MainWindow::createImageProcessingVarablesBox()
+{
+    QVBoxLayout *vbox = new QVBoxLayout;
+
+    QLabel *ThresholdValue = new QLabel("Threshold value");
+    vbox->addWidget(ThresholdValue);
+    vbox->addWidget(ui->thresholdValue_Slider);
+
+    vbox->addStretch(1);
+    ui->ImageProcessingVariables_groupBox->setLayout(vbox);
+}
+
+void MainWindow::createDeviceVariablesBox()
+{
+    QVBoxLayout *vbox = new QVBoxLayout;
+vbox->addWidget(ui->motor_ON_OFF_pushButton);
+
+    QLabel *SpeedValue = new QLabel("Motor speed");
+    vbox->addWidget(SpeedValue);
+vbox->addWidget(ui->motorSpeed_Slider);
+
+
+
+    vbox->addStretch(1);
+    ui->ImageProcessingVariables_groupBox->setLayout(vbox);
+}
+
 void MainWindow::connectSignalsToSlots()
 {
 
-    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(int)),
-            this->ImPrWorker, SLOT(changeSetup(int)));
-
-    connect(this->ImPrWorker, SIGNAL(connectStatusHasChanged(QString)),
-            ui->connectStatus_Label, SLOT(setStyleSheet(QString)) );
+    connect(ui->ListOfCameras_ComboBox, SIGNAL(activated(QString)),
+            this->ImPrWorker, SLOT(changeSetup(QString)));
 
     connect(ui->refreshList_Button, SIGNAL(pressed()),
             this, SLOT(ShowConnectedCameras()) );
@@ -270,8 +289,7 @@ void MainWindow::connectSignalsToSlots()
     connect(this->ImPrWorker, SIGNAL(lostConnection()),
             this, SLOT(setInitConf()) );
 
-    connect(this, SIGNAL(setDefaultIndex(int)),
-            this->ImPrWorker, SLOT(changeSetup(int)));
+    connect(this, SIGNAL(setDefaultIndex(QString)), this->ImPrWorker, SLOT(changeSetup(QString)));
 
     connect(this->ImPrWorker, SIGNAL(cantConnectToCamera()),
             this, SLOT(informCannotConnectToCamera()) );
@@ -305,6 +323,8 @@ void MainWindow::connectSignalsToSlots()
     connect(this->UART, SIGNAL(UARTdisconnected()),
             this, SLOT(UARTdisconnected()) );
 
+    connect(this->UART, SIGNAL(UARTconnected()), this, SLOT(UARTconnected()));
+
     connect(this->motor, SIGNAL(sendMessage(const QString*,const QString*,int)),
             this->UART, SLOT(sendMessage(const QString*,const QString*,int)));
 }
@@ -317,12 +337,14 @@ void MainWindow::createImageProcessingThread()
     imageProcessingThread = new QThread();
 
     QTimer *timer = new QTimer();
-    timer->setInterval(40);
+    timer->setInterval(ImageProcessWorker::GrabImageInterval);
 
     connect(timer, SIGNAL(timeout()), ImPrWorker, SLOT(grabImageFromCamera()) );
+    connect(this->ImPrWorker, SIGNAL(connectionEstablished()),timer, SLOT(start()));
+    connect(this->ImPrWorker, SIGNAL(lostConnection()),timer, SLOT(stop()));
 
     // When the thread starts, the 'timer' will be informed and will start working too
-    connect(imageProcessingThread, SIGNAL(started()), timer, SLOT(start()));
+    //connect(imageProcessingThread, SIGNAL(started()), timer, SLOT(start()));
 
     this->ImPrWorker->moveToThread(imageProcessingThread);
     timer->moveToThread(imageProcessingThread);
@@ -336,6 +358,12 @@ void MainWindow::createImageProcessingThread()
 
 void MainWindow::UARTdisconnected()
 {
+    ui->DeviceVariables_groupBox->setDisabled(true);
     QMessageBox::warning(this, "Error", "Serial port has been closed");;
 
+}
+
+void MainWindow::UARTconnected()
+{
+    ui->DeviceVariables_groupBox->setEnabled(true);
 }

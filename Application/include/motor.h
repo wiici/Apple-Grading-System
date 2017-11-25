@@ -36,7 +36,7 @@ private:
     // on/off flags
     bool isEnable;
     QPushButton *Motor_ON_OFF_BUtton;
-    QSlider *MotorSpeed;
+    QSlider *MotorSpeedSlider;
 
 };
 

@@ -76,16 +76,24 @@ void ImageProcessWorker::grabImageFromCamera()
 }
 
 
-void ImageProcessWorker::changeSetup(int CameraIndex)
+void ImageProcessWorker::changeSetup(QString SelectedItemText)
 {
-    CameraIndex--;
+    int CameraIndex;
+    int index = SelectedItemText.indexOf(' ');
+    QString FirstString = SelectedItemText.left(index);
+
+    if(FirstString == "Select")
+        return;
+
+    CameraIndex = FirstString.toInt();
+
+    qWarning() << "ImageProcessWorker::changeSetup()_CameraIndex: " << CameraIndex;
 
     if(CameraIndex < 0)
         return;
 
     if( this->connectToCamera(CameraIndex) ) {
         this->isConnectedToCamera = true;
-        emit connectStatusHasChanged("background-color: green");
         emit connectionEstablished();
     }
     else

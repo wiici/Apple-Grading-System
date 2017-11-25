@@ -26,6 +26,8 @@ public:
     std::map <int, const char*> WindowNameMap;
     std::vector<cv::Mat *> Images;
 
+    static const int GrabImageInterval = 40; // msec
+
 private:
     bool isConnectedToCamera;
     QSlider *BrightnessSlider;
@@ -46,7 +48,7 @@ signals:
 
 public slots:
     void grabImageFromCamera();
-    void changeSetup(int CameraIndex);
+    void changeSetup(QString SelectedItemText);
     void changeThresholdValue(int value);
 
 private slots:

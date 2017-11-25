@@ -5,23 +5,24 @@
 #include <QPalette>
 #include <QDebug>
 
-Motor::Motor(QPushButton *Motor_ON_OFF_BUtton, QSlider *MotorSpeed, QObject *parent) :
+Motor::Motor(QPushButton *Motor_ON_OFF_BUtton, QSlider *MotorSpeedSlider, QObject *parent) :
     QObject(parent),
     Motor_ON_OFF_BUtton(Motor_ON_OFF_BUtton),
-    MotorSpeed(MotorSpeed)
+    MotorSpeedSlider(MotorSpeedSlider)
 {
     // motor off at the beginnig
     this->isEnable = false;
     // disable widgets which need the connection to the serial port
     this->Motor_ON_OFF_BUtton->setDisabled(true);
-    this->MotorSpeed->setDisabled(true);
+    this->MotorSpeedSlider->setDisabled(true);
 
-    this->MotorSpeed->setRange(this->minSpeed, this->maxSpeed);
-    this->MotorSpeed->setValue(150);
+    this->MotorSpeedSlider->setRange(this->minSpeed, this->maxSpeed);
+    this->MotorSpeedSlider->setValue(150);
+    this->MotorSpeedSlider->setDisabled(true);
 
     // when pressed the button change the background and the flag (isEnable)
     connect(this->Motor_ON_OFF_BUtton, SIGNAL(pressed()), this, SLOT(ON_OFF_BUtton_Pressed()) );
-    connect(this->MotorSpeed, SIGNAL(sliderReleased()), this, SLOT(setSpeed()));
+    connect(this->MotorSpeedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeed()));
 }
 
 Motor::~Motor()
@@ -34,13 +35,13 @@ Motor::~Motor()
 
 void Motor::setSpeed()
 {
-    qWarning() << "Motor::setSpeed()_Speed:" << this->MotorSpeed->value();
+    qWarning() << "Motor::setSpeed()_Speed:" << this->MotorSpeedSlider->value();
 
     // emit the signal to the UARTserive which will create the message
     // and send it to the device via serial port
     emit sendMessage(&MotorCommand,
                      &SetSpeedArgument,
-                     MotorSpeed->value());
+                     MotorSpeedSlider->value());
 }
 
 
@@ -48,7 +49,6 @@ void Motor::UARTconnected()
 {
     // enable widgets which need the connection to the serial port
     this->Motor_ON_OFF_BUtton->setEnabled(true);
-    this->MotorSpeed->setEnabled(true);
 
     // set property background colour
     if(this->isEnable)
@@ -70,9 +70,11 @@ void Motor::ON_OFF_BUtton_Pressed()
     if(this->isEnable) {
         this->isEnable = false;
         this->Motor_ON_OFF_BUtton->setStyleSheet("background: red");
+        this->MotorSpeedSlider->setDisabled(true);
     } else {
         this->isEnable = true;
         this->Motor_ON_OFF_BUtton->setStyleSheet("background: green");
+        this->MotorSpeedSlider->setEnabled(true);
     }
 
     qWarning() << "Motor::ON_OFF_BUtton_Pressed()_isEnabled:" << this->isEnable;
