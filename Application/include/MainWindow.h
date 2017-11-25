@@ -18,7 +18,6 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include "include/ImageProcessWorker.h"
-#include "include/BluetoothService.h"
 #include "include/UARTservice.h"
 #include "include/motor.h"
 
@@ -42,7 +41,6 @@ private:
     QThread *imageProcessingThread;
     ImageProcessWorker *ImPrWorker;
     QVector<QCheckBox*> ListOfCheckBoxes;
-    BluetoothService *BTservice;
     UARTservice *UART;
     Motor *motor;
 

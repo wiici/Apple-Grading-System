@@ -21,15 +21,13 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
                                               ui->saturationValue_Slider,
                                               ui->contrastValue_Slider,
                                               parent);
-    this->BTservice = new BluetoothService(ui->listOfBTdevices_listWidget, ui->scanBT_Button, parent);
+
     this->UART = new UARTservice(ui->textEdit, ui->listOfSerialPorts_listWidget, 115200 ,parent);
     this->motor = new Motor(ui->motor_ON_OFF_pushButton, ui->motorSpeed_Slider, parent);
 
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
 
     ShowConnectedCameras();
-
-
 
     this->ImPrWorker->setThresholdValue(127);
     ui->thresholdValue_Slider->setSliderPosition(127);
@@ -75,34 +73,35 @@ MainWindow::~MainWindow()
 // show all available video capture devices in the ComboBox
 void MainWindow::ShowConnectedCameras() {
 
+    QFile File;
+
     // Each attached camera has own folder (e.g. video0 - the number depends on
     // the order in which camera has been connected to the system)
     QString Path = "/sys/class/video4linux/video";
 
+    // Useful in read lines from file
+    QTextStream FileStream(&File);
 
-    // Create the oject and pass the entire path of 'name' file which
-    // contains the product name of the camera.
-    //QFile File( Path + QString::number(Counter) + "/name");
-    QFile File;
     // The list will be filled again so remove all items.
     ui->ListOfCameras_ComboBox->clear();
     ui->ListOfCameras_ComboBox->addItem("Select the camera...");
 
-    // Useful in read lines from file
-    QTextStream FileStream(&File);
-
     // max 64 devices in the v4l interface
     for(unsigned int Counter = 0; Counter < 64; Counter++) {
-File.setFileName(Path + QString::number(Counter) + "/name");
+        File.setFileName(Path + QString::number(Counter) + "/name");
+
         if( File.open(QIODevice::ReadOnly) ) {
             QString ItemText = QString("%1 %2").arg(Counter).arg(FileStream.readLine());
             // Add to the ComboBox name of device
             ui->ListOfCameras_ComboBox->addItem( ItemText );
 
             File.close();
-
         }
     }
+    // Inform user if can't find any camera (in the combo box there is only
+    // one item "Select the camera..."
+    if(ui->ListOfCameras_ComboBox->count() == 1)
+        QMessageBox::warning(this, "Warning", "Can't find any camera");
 }
 
 void MainWindow::displayImages()
@@ -115,8 +114,6 @@ void MainWindow::displayImages()
             cv::imshow(ImPrWorker->WindowNameMap[i], *(this->ImPrWorker->Images[i]));
         }
     }
-
-
 }
 
 void MainWindow::setInitConf()
@@ -289,7 +286,8 @@ void MainWindow::connectSignalsToSlots()
     connect(this->ImPrWorker, SIGNAL(lostConnection()),
             this, SLOT(setInitConf()) );
 
-    connect(this, SIGNAL(setDefaultIndex(QString)), this->ImPrWorker, SLOT(changeSetup(QString)));
+    connect(this, SIGNAL(setDefaultIndex(QString)),
+            this->ImPrWorker,SLOT(changeSetup(QString)));
 
     connect(this->ImPrWorker, SIGNAL(cantConnectToCamera()),
             this, SLOT(informCannotConnectToCamera()) );
@@ -302,9 +300,6 @@ void MainWindow::connectSignalsToSlots()
 
     connect(this->ImPrWorker, SIGNAL(connectionEstablished()),
             this, SLOT(receive_cameraConnectionEstablished()) );
-
-    connect(ui->scanBT_Button, SIGNAL(pressed()),
-            this->BTservice, SLOT(scanStart()) );
 
     connect(this->ImPrWorker, SIGNAL(lostConnection()),
             this, SLOT(receive_lostCameraConnection()) );
@@ -340,6 +335,7 @@ void MainWindow::createImageProcessingThread()
     timer->setInterval(ImageProcessWorker::GrabImageInterval);
 
     connect(timer, SIGNAL(timeout()), ImPrWorker, SLOT(grabImageFromCamera()) );
+    // if the
     connect(this->ImPrWorker, SIGNAL(connectionEstablished()),timer, SLOT(start()));
     connect(this->ImPrWorker, SIGNAL(lostConnection()),timer, SLOT(stop()));
 
