@@ -8,10 +8,17 @@
 #ifndef IMAGEPROCESSMODULE_H_
 #define IMAGEPROCESSMODULE_H_
 
+#include "FeaturesVector.h"
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+
+#include <cstdlib>
+#include <cstdio>
+#include <string.h>
+
 
 /**
  *
@@ -23,6 +30,7 @@ class ImageProcessModule
 {
 private:
 
+
 	cv::Mat* SourceImage;
 	cv::Mat* GrayScaleImage;
 	cv::Mat* BinaryImage;
@@ -31,6 +39,12 @@ private:
 
 	// image processing parameters
 	int ThresholdValue;
+
+	enum FruitQualityCategories{ExtraClass = 1,
+								ClassI,
+								ClassII,
+								Rejected};
+
 
 public:
 
@@ -155,6 +169,8 @@ public:
 	void thresh_callback(int, void* );
 
 	void imageSegmentation();
+
+	void create_kNN_Classifier();
 
 };
 

@@ -4,7 +4,6 @@
 
 #define CAMERA_ID 0
 
-
 TEST(DefaultConstructor_Test, Default)
 {
 
@@ -98,6 +97,7 @@ TEST(imagePreProcessing, default)
 
 	test.connectToCamera(CAMERA_ID);
 	test.setThresholdValue(50);
+	/*
 	while(true)
 	{
 		test.grabImage();
@@ -106,7 +106,14 @@ TEST(imagePreProcessing, default)
 		cv::imshow("obraz", *(test.getBinaryImage()));
 		cv::waitKey(25);
 	}
+	*/
+}
 
+TEST(createClassifier_Test, default)
+{
+
+	ImageProcessModule test;
+	test.create_kNN_Classifier();
 
 }
 

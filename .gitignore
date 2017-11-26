@@ -25,3 +25,6 @@ latex
 html
 build
 bin
+
+*.xml
+*.jpg
