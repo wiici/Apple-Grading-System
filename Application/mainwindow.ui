@@ -43,55 +43,6 @@
      <string>Refresh</string>
     </property>
    </widget>
-   <widget class="QListWidget" name="listOfBTdevices_listWidget">
-    <property name="geometry">
-     <rect>
-      <x>820</x>
-      <y>20</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="scanBT_Button">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>20</y>
-      <width>91</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Scan</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="connectToBT_Button">
-    <property name="geometry">
-     <rect>
-      <x>840</x>
-      <y>50</y>
-      <width>80</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Connect</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="clearBTlist_Button">
-    <property name="geometry">
-     <rect>
-      <x>620</x>
-      <y>30</y>
-      <width>80</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Clear</string>
-    </property>
-   </widget>
    <widget class="QGroupBox" name="ImageTypes_groupBox">
     <property name="geometry">
      <rect>
@@ -111,8 +62,8 @@
    <widget class="QPushButton" name="searchSerialPorts_pushButton">
     <property name="geometry">
      <rect>
-      <x>560</x>
-      <y>230</y>
+      <x>590</x>
+      <y>20</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -125,7 +76,7 @@
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>130</y>
+      <y>20</y>
       <width>261</width>
       <height>121</height>
      </rect>
@@ -157,7 +108,7 @@
    <widget class="QGroupBox" name="CameraParameters_groupBox">
     <property name="geometry">
      <rect>
-      <x>350</x>
+      <x>340</x>
       <y>30</y>
       <width>191</width>
       <height>171</height>
@@ -212,8 +163,8 @@
    <widget class="QGroupBox" name="ImageProcessingVariables_groupBox">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>330</y>
+      <x>60</x>
+      <y>290</y>
       <width>191</width>
       <height>171</height>
      </rect>
@@ -268,8 +219,8 @@
    <widget class="QGroupBox" name="DeviceVariables_groupBox">
     <property name="geometry">
      <rect>
-      <x>700</x>
-      <y>260</y>
+      <x>710</x>
+      <y>160</y>
       <width>191</width>
       <height>261</height>
      </rect>
