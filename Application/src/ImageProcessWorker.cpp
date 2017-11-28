@@ -1,6 +1,7 @@
 #include "include/ImageProcessWorker.h"
 #include <QMessageBox>
 #include <QDebug>
+#include <QString>
 #include <map>
 //***************************************************
 //
@@ -51,7 +52,7 @@ ImageProcessWorker::~ImageProcessWorker()
 
 //*************************************************
 //
-//          SLOTS
+//         PUBLIC SLOTS
 //
 //
 
@@ -106,6 +107,34 @@ void ImageProcessWorker::changeThresholdValue(int value)
     ImageProcessModule::setThresholdValue(value);
 }
 
+void ImageProcessWorker::changeMinRGBvalue(int value)
+{
+    QString SenderName = this->sender()->objectName();
+
+    // Sliders which change these values should have
+    // 'R', 'G' or 'B' sign on the first place in the string
+    // e.g. RminValue_Slider , GminValue_Slider, BminValue_Slider
+    QChar Colour = SenderName[0];
+
+    // change QChar to char and check the value
+    switch( Colour.unicode() ) {
+    case 'R':
+        set_minRGBvalue(Red, value);
+        break;
+    case 'G':
+        set_minRGBvalue(Green, value);
+        break;
+    case 'B':
+        set_minRGBvalue(Blue, value);
+        break;
+    }
+}
+
+//*************************************************
+//
+//         PRIVATE SLOTS
+//
+//
 
 void ImageProcessWorker::enableWidgets()
 {

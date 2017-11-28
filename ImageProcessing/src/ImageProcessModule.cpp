@@ -13,6 +13,14 @@
 ImageProcessModule::ImageProcessModule(int InitThresholdValue) :
 ThresholdValue(InitThresholdValue)
 {
+
+	this->SecondThresholdValue = InitThresholdValue;
+
+	for(int i=0; i < 3; i++) {
+		this->minRGBvalues[i] = 30;
+		this->maxRGBvalues[i] = 60;
+	}
+
 	this->SourceImage = new cv::Mat();
 	this->GrayScaleImage = new cv::Mat();
 	this->BinaryImage = new cv::Mat();
@@ -67,6 +75,46 @@ bool ImageProcessModule::setCameraContrast(double Value)
 	return this->Camera->set(cv::CAP_PROP_CONTRAST, Value);
 }
 
+void ImageProcessModule::setSecondThresholdValue(int Value)
+{
+	if(Value > 255) {
+		this->SecondThresholdValue = 255;
+		return;
+	}
+	else if(Value < 0) {
+		this->SecondThresholdValue = 0;
+		return;
+	}
+
+	this->SecondThresholdValue = Value;
+}
+
+void ImageProcessModule::set_minRGBvalue(int colour, int Value)
+{
+
+	if(colour < 3)
+		return;
+
+	if(Value > 255 )
+		this->minRGBvalues[colour] = 255;
+	else if(Value < 0)
+		this->minRGBvalues[colour] = 0;
+
+	this->minRGBvalues[colour] = Value;
+}
+
+void ImageProcessModule::set_maxRGBvalue(int colour, int Value)
+{
+	if(colour < 3)
+		return;
+
+	if(Value > 255 )
+		this->maxRGBvalues[colour] = 255;
+	else if(Value < 0)
+		this->maxRGBvalues[colour] = 0;
+
+	this->maxRGBvalues[colour] = Value;
+}
 
 /*
  *
@@ -90,7 +138,6 @@ cv::Mat* ImageProcessModule::getGrayscaleImage() {
 cv::Mat* ImageProcessModule::getBinaryImage() {
 	return BinaryImage;
 }
-
 
 cv::VideoCapture* ImageProcessModule::getCamera() {
 	return Camera;
@@ -127,7 +174,10 @@ double ImageProcessModule::getCameraContrast()
 }
 
 
-
+int ImageProcessModule::getSecondThresholdValue()
+{
+	return this->SecondThresholdValue;
+}
 
 
 bool ImageProcessModule::connectToCamera(int CameraID) {
@@ -146,10 +196,13 @@ bool ImageProcessModule::connectToCamera(int CameraID) {
 void ImageProcessModule::imagePreProcessing() {
 
 	// RGB -> Grayscale
-	cv::cvtColor(*SourceImage, *GrayScaleImage, CV_RGB2GRAY);
+	//cv::cvtColor(*SourceImage, *GrayScaleImage, CV_RGB2GRAY);
 
 	// blur an image to reduce a noise (a mask 3x3)
-	cv::blur( *(this->GrayScaleImage), *(this->GrayScaleImage), cv::Size(3,3) );
+	//cv::blur( *(this->GrayScaleImage), *(this->GrayScaleImage), cv::Size(3,3) );
+
+	//cv::threshold(*(this->GrayScaleImage), *(this->BinaryImage),
+	//		  this->ThresholdValue, 255, cv::THRESH_BINARY);
 }
 
 bool ImageProcessModule::grabImage() {
@@ -161,6 +214,7 @@ bool ImageProcessModule::grabImage() {
 	return !this->SourceImage->empty();
 }
 
+/*
 void ImageProcessModule::displayImages() {
 
 
@@ -168,23 +222,32 @@ void ImageProcessModule::displayImages() {
 	cv::waitKey(25);
 
 }
+*/
 
 void ImageProcessModule::imageSegmentation() {
 
-	thresh_callback(0,0);
+	cv::inRange(*(this->SourceImage),
+				cv::Scalar(minRGBvalues[Blue], minRGBvalues[Green], minRGBvalues[Red]),
+				cv::Scalar(maxRGBvalues[Blue], maxRGBvalues[Green], maxRGBvalues[Red]),
+				*(this->BinaryImage) );
+
+	//thresh_callback(0,0);
 
 }
 
 /** @function thresh_callback */
 void ImageProcessModule::thresh_callback(int, void* )
 {
+	/*
 	cv::Mat canny_output;
 	std::vector<std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;
 	cv::RNG rng(12345);
 
 	/// Detect edges using canny
-	cv::Canny( *(this->GrayScaleImage), *(this->BinaryImage), this->ThresholdValue, this->ThresholdValue*2, 3 );
+	cv::Canny( *(this->GrayScaleImage), *(this->BinaryImage), ThresholdValue, SecondThresholdValue, 3 );
+
+
 	/// Find contours
 	cv::findContours( *(this->BinaryImage), contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
 	/// Get the moments
@@ -197,18 +260,23 @@ void ImageProcessModule::thresh_callback(int, void* )
 	for( unsigned int i = 0; i < contours.size(); i++ )
 	{ mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); }
 	/// Draw contours
-	cv::Mat drawing = cv::Mat::zeros( this->BinaryImage->size(), CV_8UC3 );
+	//*(this->ContoursImage)= cv::Mat::zeros( this->BinaryImage->size(), CV_8UC3 );
+	std::cout << "Contours ssize: " << contours.size() << std::endl;
+	/*
 	for( unsigned int i = 0; i< contours.size(); i++ )
 	{
 		// set white color of contours
 		cv::Scalar color = cv::Scalar( 255, 255, 255 );
-		cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
-		circle( drawing, mc[i], 4, color, -1, 8, 0 );
+		cv::drawContours( *(this->ContoursImage), contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
+		circle( *(this->ContoursImage), mc[i], 4, color, -1, 8, 0 );
 	}
+	*/
 
-	/// Show in a window
+	 //Show in a window
 	//cv::namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
-	//cv::imshow( "Contours", drawing );
+	//cv::imshow( "Contours", *(this->BinaryImage) );
+
+	//cv::waitKey(0);
 
 }
 
@@ -300,6 +368,8 @@ void ImageProcessModule::create_kNN_Classifier()
 				isGoodNumber = 0;
 				break;
 			}
+			imagePreProcessing();
+			imageSegmentation();
 			isGoodNumber = 1;
 		}
 

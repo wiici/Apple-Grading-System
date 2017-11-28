@@ -50,6 +50,8 @@ private:
     void createCameraParametersBox();
     void createImageProcessingVarablesBox();
     void createDeviceVariablesBox();
+    void createMinRGBvaluesBox();
+    void createMaxRGBvaluesBox();
 
 signals:
     void setDefaultIndex(QString InitValue);
@@ -80,6 +82,7 @@ public slots:
     void receive_lostCameraConnection();
     void selectAllCheckBoxes(int status);
     void cantFindSerialPorts();
+    void changeSecondThresholdValue(int value);
 
 private slots:
     void UARTdisconnected();

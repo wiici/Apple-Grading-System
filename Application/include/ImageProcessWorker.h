@@ -50,6 +50,7 @@ public slots:
     void grabImageFromCamera();
     void changeSetup(QString SelectedItemText);
     void changeThresholdValue(int value);
+    void changeMinRGBvalue(int value);
 
 private slots:
     void enableWidgets();

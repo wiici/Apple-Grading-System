@@ -8,8 +8,6 @@
 #ifndef IMAGEPROCESSMODULE_H_
 #define IMAGEPROCESSMODULE_H_
 
-#include "FeaturesVector.h"
-
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -18,6 +16,14 @@
 #include <cstdlib>
 #include <cstdio>
 #include <string.h>
+
+
+struct FeaturesVector {
+
+
+};
+
+typedef struct FeaturesVector FeaturesVector;
 
 
 /**
@@ -35,10 +41,17 @@ private:
 	cv::Mat* GrayScaleImage;
 	cv::Mat* BinaryImage;
 
+
 	cv::VideoCapture* Camera;
 
 	// image processing parameters
 	int ThresholdValue;
+	int SecondThresholdValue;
+
+
+
+	int minRGBvalues[3];
+	int maxRGBvalues[3];
 
 	enum FruitQualityCategories{ExtraClass = 1,
 								ClassI,
@@ -60,6 +73,8 @@ public:
 	 */
 	~ImageProcessModule();
 
+	enum Colour{Red, Green, Blue};
+
 	/**
 	 *
 	 * @brief Setter
@@ -70,12 +85,17 @@ public:
 	 */
 	void setThresholdValue(int Value);
 
+	void setSecondThresholdValue(int value);
+
 	bool setCameraBrightness(double Value);
 
 	bool setCameraSaturation(double Value);
 
 	bool setCameraContrast(double Value);
 
+	void set_minRGBvalue(int colour, int value);
+
+	void set_maxRGBvalue(int colour, int Value);
 
 	/**
 	 * @brief Getter
@@ -113,6 +133,8 @@ public:
 	 */
 	cv::VideoCapture* getCamera();
 
+	cv::Mat* getContoursImage();
+
 	int getCameraFrameWidth();
 
 	int getCameraFrameHeight();
@@ -124,6 +146,8 @@ public:
 	double getCameraSaturation();
 
 	double getCameraContrast();
+
+	int getSecondThresholdValue();
 
 
 	/**
@@ -141,7 +165,7 @@ public:
 	 */
 	bool connectToCamera(int CameraID);
 
-	void displayImages();
+	//void displayImages();
 
 	/**
 	 * @brief Grab the image from the camera.

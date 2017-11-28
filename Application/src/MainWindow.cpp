@@ -29,8 +29,9 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     ShowConnectedCameras();
 
-    this->ImPrWorker->setThresholdValue(127);
-    ui->thresholdValue_Slider->setSliderPosition(127);
+    this->ImPrWorker->setThresholdValue(50);
+    ui->thresholdValue_Slider->setSliderPosition(50);
+    ui->secondThresholdValue_Slider->setSliderPosition(this->ImPrWorker->getSecondThresholdValue());
 
     this->createImageTypesBox();
 
@@ -38,15 +39,14 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     ui->CameraParameters_groupBox->setDisabled(true);
     ui->ImageProcessingVariables_groupBox->setDisabled(true);
     ui->DeviceVariables_groupBox->setDisabled(true);
+    ui->minRGBvalues_groupBox->setDisabled(true);
+    ui->maxRGBvalues_groupBox->setDisabled(true);
 
     this->connectSignalsToSlots();
 
     this->createImageProcessingThread();
     this->createCameraParametersBox();
     this->createImageProcessingVarablesBox();
-
-
-
 }
 
 MainWindow::~MainWindow()
@@ -123,6 +123,8 @@ void MainWindow::setInitConf()
     ui->ImageTypes_groupBox->setDisabled(true);
     ui->CameraParameters_groupBox->setDisabled(true);
     ui->ImageProcessingVariables_groupBox->setDisabled(true);
+    ui->minRGBvalues_groupBox->setDisabled(true);
+    ui->maxRGBvalues_groupBox->setDisabled(true);
 
     emit setDefaultIndex("Select camera");
 }
@@ -136,6 +138,11 @@ void MainWindow::informCannotConnectToCamera()
 void MainWindow::changeThreshold(int Value)
 {
     this->ImPrWorker->setThresholdValue(Value);
+}
+
+void MainWindow::changeSecondThresholdValue(int value)
+{
+    this->ImPrWorker->setSecondThresholdValue(value);
 }
 
 void MainWindow::setWindowsWithImages()
@@ -166,6 +173,8 @@ void MainWindow::receive_cameraConnectionEstablished()
     ui->ImageTypes_groupBox->setEnabled(true);
     ui->CameraParameters_groupBox->setEnabled(true);
     ui->ImageProcessingVariables_groupBox->setEnabled(true);
+    ui->minRGBvalues_groupBox->setEnabled(true);
+    ui->maxRGBvalues_groupBox->setEnabled(true);
 }
 
 
@@ -255,6 +264,10 @@ void MainWindow::createImageProcessingVarablesBox()
     vbox->addWidget(ThresholdValue);
     vbox->addWidget(ui->thresholdValue_Slider);
 
+    QLabel *SecondThresholdValue = new QLabel("Second threshold value");
+    vbox->addWidget(SecondThresholdValue);
+    vbox->addWidget(ui->secondThresholdValue_Slider);
+
     vbox->addStretch(1);
     ui->ImageProcessingVariables_groupBox->setLayout(vbox);
 }
@@ -262,17 +275,70 @@ void MainWindow::createImageProcessingVarablesBox()
 void MainWindow::createDeviceVariablesBox()
 {
     QVBoxLayout *vbox = new QVBoxLayout;
-vbox->addWidget(ui->motor_ON_OFF_pushButton);
+    vbox->addWidget(ui->motor_ON_OFF_pushButton);
 
     QLabel *SpeedValue = new QLabel("Motor speed");
     vbox->addWidget(SpeedValue);
-vbox->addWidget(ui->motorSpeed_Slider);
-
-
+    vbox->addWidget(ui->motorSpeed_Slider);
 
     vbox->addStretch(1);
     ui->ImageProcessingVariables_groupBox->setLayout(vbox);
 }
+
+
+void MainWindow::createMinRGBvaluesBox()
+{
+    QVBoxLayout *vbox = new QVBoxLayout;
+
+    QLabel *R_value = new QLabel("R value");
+    vbox->addWidget(R_value);
+    vbox->addWidget(ui->RminValue_Slider);
+
+    QLabel *G_value = new QLabel("G value");
+    vbox->addWidget(G_value);
+    vbox->addWidget(ui->GminValue_Slider);
+
+    QLabel *B_value = new QLabel("B value");
+    vbox->addWidget(B_value);
+    vbox->addWidget(ui->BminValue_Slider);
+
+    vbox->addStretch(1);
+    ui->minRGBvalues_groupBox->setLayout(vbox);
+
+    connect(ui->RminValue_Slider, SIGNAL(valueChanged(int)),
+            this->ImPrWorker, SLOT(changeMinRGBvalue(int)) );
+
+    connect(ui->GminValue_Slider, SIGNAL(valueChanged(int)),
+            this->ImPrWorker, SLOT(changeMinRGBvalue(int)) );
+
+    connect(ui->BminValue_Slider, SIGNAL(valueChanged(int)),
+            this->ImPrWorker, SLOT(changeMinRGBvalue(int)) );
+}
+
+
+void MainWindow::createMaxRGBvaluesBox()
+{
+    QVBoxLayout *vbox = new QVBoxLayout;
+
+    QLabel *R_value = new QLabel("R value");
+    vbox->addWidget(R_value);
+    vbox->addWidget(ui->maxRvalue_Slider);
+
+    QLabel *G_value = new QLabel("G value");
+    vbox->addWidget(G_value);
+    vbox->addWidget(ui->maxGvalue_Slider);
+
+    QLabel *B_value = new QLabel("B value");
+    vbox->addWidget(B_value);
+    vbox->addWidget(ui->maxBvalue_Slider);
+
+    vbox->addStretch(1);
+    ui->maxRGBvalues_groupBox->setLayout(vbox);
+
+}
+
+
+
 
 void MainWindow::connectSignalsToSlots()
 {
@@ -298,6 +364,9 @@ void MainWindow::connectSignalsToSlots()
     connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)),
             this, SLOT(changeThreshold(int)));
 
+    connect(ui->secondThresholdValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(changeSecondThresholdValue(int)));
+
     connect(this->ImPrWorker, SIGNAL(connectionEstablished()),
             this, SLOT(receive_cameraConnectionEstablished()) );
 
@@ -322,6 +391,8 @@ void MainWindow::connectSignalsToSlots()
 
     connect(this->motor, SIGNAL(sendMessage(const QString*,const QString*,int)),
             this->UART, SLOT(sendMessage(const QString*,const QString*,int)));
+
+
 }
 
 
