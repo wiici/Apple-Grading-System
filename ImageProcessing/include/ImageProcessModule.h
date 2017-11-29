@@ -12,6 +12,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/photo.hpp>
 
 #include <cstdlib>
 #include <cstdio>
@@ -39,14 +40,19 @@ private:
 
 	cv::Mat* SourceImage;
 	cv::Mat* GrayScaleImage;
+	cv::Mat* HSV_Image;
 	cv::Mat* BinaryImage;
+	cv::Mat* LightReflectionsImage;
 
 
 	cv::VideoCapture* Camera;
 
 	// image processing parameters
-	int ThresholdValue;
+	int ReflectsThresholdValue;
+	int InpaintRadius;
 	int SecondThresholdValue;
+
+
 
 
 
@@ -66,7 +72,7 @@ public:
 	 *
 	 * @param InitThresholdValue set the value of threshold for binariazation.
 	 */
-	ImageProcessModule(int InitThresholdValue = 127);
+	ImageProcessModule(int InitThresholdValue = 127, int InitRadius = 3);
 
 	/*
 	 * @brief Desctructor
@@ -83,7 +89,7 @@ public:
 	 *
 	 * @param Value to set
 	 */
-	void setThresholdValue(int Value);
+	void setReflectsThresholdValue(int Value);
 
 	void setSecondThresholdValue(int value);
 
@@ -97,12 +103,16 @@ public:
 
 	void set_maxRGBvalue(int colour, int Value);
 
+	void setInpaintRadius(int Value);
+
 	/**
 	 * @brief Getter
 	 *
 	 * @return The actual threshold value.
 	 */
-	int getThresholdValue();
+	int getReflectsThresholdValue();
+
+	int getInpaintRadius();
 
 	/**
 	 * @brief Getter
@@ -126,14 +136,16 @@ public:
 	 */
 	cv::Mat* getBinaryImage();
 
+	cv::Mat* getLightReflectionsImage();
+
+	cv::Mat* getHSV_Image();
+
 	/**
 	 * @brief Getter
 	 *
 	 * @return Get the pointer to the source image from the camera.
 	 */
 	cv::VideoCapture* getCamera();
-
-	cv::Mat* getContoursImage();
 
 	int getCameraFrameWidth();
 

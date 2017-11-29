@@ -21,7 +21,9 @@ public:
     ~ImageProcessWorker();
     enum ImageWindowName { SourceImage,
                            GrayScaleImage,
-                           BoundaryImage
+                           HSV_Image,
+                           BoundaryImage,
+                           LightReflectsImage
                          };
     std::map <int, const char*> WindowNameMap;
     std::vector<cv::Mat *> Images;
@@ -50,7 +52,7 @@ signals:
 public slots:
     void grabImageFromCamera();
     void changeSetup(QString SelectedItemText);
-    void changeThresholdValue(int value);
+    void changeReflectsThresholdValue(int value);
     void changeMinRGBvalue(int value);
     void changeMaxRGBvalue(int value);
 

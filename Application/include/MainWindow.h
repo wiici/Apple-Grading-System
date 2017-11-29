@@ -48,7 +48,7 @@ public slots:
      * @brief Display an image if a checkbox is selected.
      */
     void displayImages();
-    void changeThreshold(int Value);
+    void changeReflectsThreshold(int Value);
     /**
      * @brief Create windows where images will be displayed.
      */
@@ -91,6 +91,7 @@ private slots:
     void closeEvent(QCloseEvent *event);
     void showChangedMinRGBvalues(int Value);
     void showChangedMaxRGBvalues(int Value);
+    void changeInpaintRadius(int Value);
 
 
 

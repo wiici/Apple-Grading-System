@@ -9,7 +9,7 @@ TEST(DefaultConstructor_Test, Default)
 
 	ImageProcessModule test;
 
-	EXPECT_EQ(127, test.getThresholdValue());
+	EXPECT_EQ(127, test.getReflectsThresholdValue());
 
 	EXPECT_TRUE( NULL != test.getSourceImage());
 	EXPECT_TRUE( NULL != test.getBinaryImage());
@@ -24,39 +24,39 @@ TEST(DefaultConstructor_Test, PassArgument_ThresholdValue)
 	int setValue = rand()%256;
 	ImageProcessModule test(setValue);
 
-	EXPECT_EQ(setValue, test.getThresholdValue());
+	EXPECT_EQ(setValue, test.getReflectsThresholdValue());
 
 }
 
 
-TEST(setThresholdValue_Test, positiveArgument)
+TEST(setReflectsThresholdValue_Test, positiveArgument)
 {
 	ImageProcessModule test;
 	int argument = rand()%256;
 
-	test.setThresholdValue(argument);
+	test.setReflectsThresholdValue(argument);
 
-	EXPECT_EQ(argument, test.getThresholdValue());
+	EXPECT_EQ(argument, test.getReflectsThresholdValue());
 }
 
-TEST(setThresholdValue_Test, positiveArgument_Out_Of_Range)
+TEST(setReflectsThresholdValue_Test, positiveArgument_Out_Of_Range)
 {
 	ImageProcessModule test;
 	int argument = rand()+256;
 
-	test.setThresholdValue(argument);
+	test.setReflectsThresholdValue(argument);
 
-	EXPECT_EQ(255, test.getThresholdValue());
+	EXPECT_EQ(255, test.getReflectsThresholdValue());
 }
 
-TEST(setThresholdValue_Test, negativeArgument)
+TEST(setReflectsThresholdValue_Test, negativeArgument)
 {
 	ImageProcessModule test;
 	int argument = (-1)*rand();
 
-	test.setThresholdValue(argument);
+	test.setReflectsThresholdValue(argument);
 
-	EXPECT_EQ(0, test.getThresholdValue());
+	EXPECT_EQ(0, test.getReflectsThresholdValue());
 }
 
 
@@ -96,18 +96,18 @@ TEST(imagePreProcessing, default)
 	ImageProcessModule test;
 
 	test.connectToCamera(CAMERA_ID);
-	test.setThresholdValue(50);
+	test.setReflectsThresholdValue(50);
 
-	/*
+
 	while(true)
 	{
 		test.grabImage();
-		test.imagePreProcessing();
+		//test.imagePreProcessing();
 		test.imageSegmentation();
-		cv::imshow("obraz", *(test.getContoursImage()));
+		cv::imshow("obraz", *(test.getBinaryImage()));
 		cv::waitKey(25);
 	}
-	*/
+
 
 }
 
@@ -115,7 +115,7 @@ TEST(createClassifier_Test, default)
 {
 
 	ImageProcessModule test;
-	test.setThresholdValue(30);
+	test.setReflectsThresholdValue(30);
 	test.setSecondThresholdValue(80);
 	std::cout << "Second: " << test.getSecondThresholdValue() << std::endl;
 	test.set_minRGBvalue(0, 50);

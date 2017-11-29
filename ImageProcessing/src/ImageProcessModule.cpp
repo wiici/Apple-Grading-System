@@ -10,8 +10,9 @@
  *
  */
 
-ImageProcessModule::ImageProcessModule(int InitThresholdValue) :
-ThresholdValue(InitThresholdValue)
+ImageProcessModule::ImageProcessModule(int InitThresholdValue, int InitRadius) :
+	ReflectsThresholdValue(InitThresholdValue),
+	InpaintRadius(InitRadius)
 {
 
 	this->SecondThresholdValue = InitThresholdValue;
@@ -23,7 +24,9 @@ ThresholdValue(InitThresholdValue)
 
 	this->SourceImage = new cv::Mat();
 	this->GrayScaleImage = new cv::Mat();
+	this->HSV_Image = new cv::Mat();
 	this->BinaryImage = new cv::Mat();
+	this->LightReflectionsImage = new cv::Mat();
 
 	this->Camera = new cv::VideoCapture();
 }
@@ -33,7 +36,9 @@ ImageProcessModule::~ImageProcessModule()
 
 	this->SourceImage->~Mat();
 	this->GrayScaleImage->~Mat();
+	this->HSV_Image->~Mat();
 	this->BinaryImage->~Mat();
+	this->LightReflectionsImage->~Mat();
 
 	this->Camera->release();
 
@@ -46,18 +51,18 @@ ImageProcessModule::~ImageProcessModule()
  * 			SETTERS
  *
  */
-void ImageProcessModule::setThresholdValue(int Value)
+void ImageProcessModule::setReflectsThresholdValue(int Value)
 {
 	if(Value > 255) {
-		this->ThresholdValue = 255;
+		this->ReflectsThresholdValue = 255;
 		return;
 	}
 	else if(Value < 0) {
-		this->ThresholdValue = 0;
+		this->ReflectsThresholdValue = 0;
 		return;
 	}
 
-	this->ThresholdValue = Value;
+	this->ReflectsThresholdValue = Value;
 }
 
 bool ImageProcessModule::setCameraBrightness(double Value)
@@ -115,15 +120,29 @@ void ImageProcessModule::set_maxRGBvalue(int colour, int Value)
 	this->maxRGBvalues[colour] = Value;
 }
 
+
+void ImageProcessModule::setInpaintRadius(int Value)
+{
+	if(Value > 15 || Value < 0)
+		return;
+
+	this->InpaintRadius = Value;
+}
+
 /*
  *
  * 			GETTERS
  *
  */
 
-int ImageProcessModule::getThresholdValue()
+int ImageProcessModule::getReflectsThresholdValue()
 {
-	return this->ThresholdValue;
+	return this->ReflectsThresholdValue;
+}
+
+int ImageProcessModule::getInpaintRadius()
+{
+	return this->InpaintRadius;
 }
 
 cv::Mat* ImageProcessModule::getSourceImage() {
@@ -134,8 +153,16 @@ cv::Mat* ImageProcessModule::getGrayscaleImage() {
 	return GrayScaleImage;
 }
 
+cv::Mat* ImageProcessModule::getHSV_Image() {
+	return HSV_Image;
+}
+
 cv::Mat* ImageProcessModule::getBinaryImage() {
 	return BinaryImage;
+}
+
+cv::Mat* ImageProcessModule::getLightReflectionsImage() {
+	return LightReflectionsImage;
 }
 
 cv::VideoCapture* ImageProcessModule::getCamera() {
@@ -210,13 +237,21 @@ bool ImageProcessModule::connectToCamera(int CameraID) {
 void ImageProcessModule::imagePreProcessing() {
 
 	// RGB -> Grayscale
-	//cv::cvtColor(*SourceImage, *GrayScaleImage, CV_RGB2GRAY);
+	cv::cvtColor(*SourceImage, *HSV_Image, CV_BGR2HSV);
+
+	cv::cvtColor(*SourceImage, *GrayScaleImage, CV_BGR2GRAY);
+	cv::threshold(*GrayScaleImage, *LightReflectionsImage,
+				  this->ReflectsThresholdValue, 255, cv::THRESH_BINARY);
+
+	cv::Mat tmp = *(SourceImage);
+
+	cv::inpaint(tmp, *LightReflectionsImage, *SourceImage, this->InpaintRadius, cv::INPAINT_NS);
 
 	// blur an image to reduce a noise (a mask 3x3)
 	//cv::blur( *(this->GrayScaleImage), *(this->GrayScaleImage), cv::Size(3,3) );
 
 	//cv::threshold(*(this->GrayScaleImage), *(this->BinaryImage),
-	//		  this->ThresholdValue, 255, cv::THRESH_BINARY);
+		//	  this->ThresholdValue, 255, cv::THRESH_BINARY);
 }
 
 bool ImageProcessModule::grabImage() {
@@ -240,10 +275,11 @@ void ImageProcessModule::displayImages() {
 
 void ImageProcessModule::imageSegmentation() {
 
-	cv::inRange(*(this->SourceImage),
-				cv::Scalar(minRGBvalues[Blue], minRGBvalues[Green], minRGBvalues[Red]),
-				cv::Scalar(maxRGBvalues[Blue], maxRGBvalues[Green], maxRGBvalues[Red]),
-				*(this->BinaryImage) );
+
+	cv::inRange(*(this->HSV_Image),
+			cv::Scalar(minRGBvalues[Blue], minRGBvalues[Green], minRGBvalues[Red]),
+			cv::Scalar(maxRGBvalues[Blue], maxRGBvalues[Green], maxRGBvalues[Red]),
+			*(this->BinaryImage) );
 
 	//thresh_callback(0,0);
 
@@ -274,9 +310,9 @@ void ImageProcessModule::thresh_callback(int, void* )
 	for( unsigned int i = 0; i < contours.size(); i++ )
 	{ mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); }
 	/// Draw contours
-	//*(this->ContoursImage)= cv::Mat::zeros( this->BinaryImage->size(), CV_8UC3 );
+	//(this->ContoursImage)= cv::Mat::zeros( this->BinaryImage->size(), CV_8UC3 );
 	std::cout << "Contours ssize: " << contours.size() << std::endl;
-	/*
+
 	for( unsigned int i = 0; i< contours.size(); i++ )
 	{
 		// set white color of contours

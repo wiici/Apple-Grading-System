@@ -16,17 +16,23 @@ ImageProcessWorker::ImageProcessWorker(QSlider *BrightnessSlider, QSlider *Satur
     ContrastSlider(ContrastSlider),
     isConnectedToCamera(false)
 {
-    ImageProcessModule();
+    int ReflectsInitValue = 150;
+    int InpaintRadius = 3;
+    ImageProcessModule(ReflectsInitValue, InpaintRadius);
 
     this->WindowNameMap[SourceImage] = "Source image";
     this->WindowNameMap[GrayScaleImage] = "Grayscale image";
-    this->WindowNameMap[BoundaryImage] = "Boundary image";
+    this->WindowNameMap[HSV_Image] = "HSV Image";
+    this->WindowNameMap[BoundaryImage] = "ROI Image";
+    this->WindowNameMap[LightReflectsImage] = "Image with light reflects";
 
     this->Images.resize(this->WindowNameMap.size());
 
     Images[SourceImage] = getSourceImage();
     Images[GrayScaleImage] = getGrayscaleImage();
+    Images[HSV_Image] = getHSV_Image();
     Images[BoundaryImage] = getBinaryImage();
+    Images[LightReflectsImage] = getLightReflectionsImage();
 
 
     setSlidersRange();
@@ -102,9 +108,9 @@ void ImageProcessWorker::changeSetup(QString SelectedItemText)
 }
 
 
-void ImageProcessWorker::changeThresholdValue(int value)
+void ImageProcessWorker::changeReflectsThresholdValue(int value)
 {
-    ImageProcessModule::setThresholdValue(value);
+    ImageProcessModule::setReflectsThresholdValue(value);
 }
 
 void ImageProcessWorker::changeMinRGBvalue(int value)

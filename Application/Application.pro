@@ -10,7 +10,7 @@ CONFIG += c++11 qt thread
 TEMPLATE = app
 TARGET = Application
 INCLUDEPATH += /usr/local/include
-LIBS += -L/usr/local/lib -limg_proc -lopencv_imgproc -lopencv_core -lopencv_highgui -lopencv_videoio
+LIBS += -L/usr/local/lib -limg_proc -lopencv_imgproc -lopencv_core -lopencv_highgui -lopencv_videoio -lopencv_photo
 
 # Input
 HEADERS += ./include/*

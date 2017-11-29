@@ -30,8 +30,8 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     ShowConnectedCameras();
 
-    this->ImPrWorker->setThresholdValue(50);
-    ui->thresholdValue_Slider->setSliderPosition(50);
+    this->ImPrWorker->setReflectsThresholdValue(200);
+    ui->reflectsThresholdValue_Slider->setSliderPosition(200);
     ui->secondThresholdValue_Slider->setSliderPosition(this->ImPrWorker->getSecondThresholdValue());
 
     // disable some widgets at the beginning
@@ -146,9 +146,10 @@ void MainWindow::displayImages()
 
 
 
-void MainWindow::changeThreshold(int Value)
+void MainWindow::changeReflectsThreshold(int Value)
 {
-    this->ImPrWorker->setThresholdValue(Value);
+    this->ImPrWorker->setReflectsThresholdValue(Value);
+    ui->reflectsThresholdValue_lineEdit->setText(QString::number(Value));
 }
 
 
@@ -294,9 +295,23 @@ void MainWindow::createImageProcessingVarablesBox()
 {
     QVBoxLayout *vbox = new QVBoxLayout;
 
-    QLabel *ThresholdValue = new QLabel("Threshold value");
+    int ReadValue;
+
+    QLabel *ThresholdValue = new QLabel("Threshold value for light reflects");
     vbox->addWidget(ThresholdValue);
-    vbox->addWidget(ui->thresholdValue_Slider);
+    ReadValue = this->ImPrWorker->getReflectsThresholdValue();
+    vbox->addWidget(ui->reflectsThresholdValue_lineEdit);
+    ui->reflectsThresholdValue_lineEdit->setText(QString::number(ReadValue));
+    vbox->addWidget(ui->reflectsThresholdValue_Slider);
+    ui->reflectsThresholdValue_Slider->setValue(ReadValue);
+
+    QLabel *InapintRadius = new QLabel("Inapint radius");
+    vbox->addWidget(InapintRadius);
+    ReadValue = this->ImPrWorker->getInpaintRadius();
+    vbox->addWidget(ui->inapintRadius_lineEdit);
+    ui->inapintRadius_lineEdit->setText(QString::number(ReadValue));
+    vbox->addWidget(ui->inpaintRadius_Slider);
+    ui->inpaintRadius_Slider->setValue(ReadValue);
 
     QLabel *SecondThresholdValue = new QLabel("Second threshold value");
     vbox->addWidget(SecondThresholdValue);
@@ -304,6 +319,12 @@ void MainWindow::createImageProcessingVarablesBox()
 
     vbox->addStretch(1);
     ui->ImageProcessingVariables_groupBox->setLayout(vbox);
+
+    connect(ui->reflectsThresholdValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(changeReflectsThreshold(int)));
+
+    connect(ui->inpaintRadius_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(changeInpaintRadius(int)));
 }
 
 void MainWindow::createDeviceVariablesBox()
@@ -443,6 +464,9 @@ void MainWindow::saveParameters(QFile& File)
             << this->ImPrWorker->getCameraSaturation() << " "
             << this->ImPrWorker->getCameraContrast() << endl;
 
+    //save parameters for image processing algorithm
+    ostream << this->ImPrWorker->getReflectsThresholdValue() << endl;
+
     // save motor speed value
     ostream << this->motor->getSpeedValue() << endl;
 }
@@ -486,6 +510,11 @@ void MainWindow::readParametersFromFile()
     istream >> CameraParameters;
     this->ImPrWorker->setCameraContrast(CameraParameters);
 
+    // read parameters for image processing algorithms
+    istream >> value;
+    this->ImPrWorker->setReflectsThresholdValue(value);
+
+    // read motor parameters
     istream >> value;
     this->motor->setInitSpeed(value);
 }
@@ -513,8 +542,7 @@ void MainWindow::connectSignalsToSlots()
     connect(this->ImPrWorker, SIGNAL(frameHasGrabbed()),
             this, SLOT(displayImages()));
 
-    connect(ui->thresholdValue_Slider, SIGNAL(valueChanged(int)),
-            this, SLOT(changeThreshold(int)));
+
 
     connect(ui->secondThresholdValue_Slider, SIGNAL(valueChanged(int)),
             this, SLOT(changeSecondThresholdValue(int)));
@@ -671,4 +699,12 @@ void MainWindow::showChangedMaxRGBvalues(int Value)
         ui->BmaxValue_lineEdit->setText(QString::number(Value));
         break;
     }
+}
+
+
+
+void MainWindow::changeInpaintRadius(int Value)
+{
+    this->ImPrWorker->setInpaintRadius(Value);
+    ui->inapintRadius_lineEdit->setText(QString::number(Value));
 }
