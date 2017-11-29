@@ -89,7 +89,8 @@ private slots:
     void UARTdisconnected();
     void UARTconnected();
     void closeEvent(QCloseEvent *event);
-
+    void showChangedMinRGBvalues(int Value);
+    void showChangedMaxRGBvalues(int Value);
 
 
 

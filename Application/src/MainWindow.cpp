@@ -323,24 +323,31 @@ void MainWindow::createDeviceVariablesBox()
 void MainWindow::createMinRGBvaluesBox()
 {
     QVBoxLayout *vbox = new QVBoxLayout;
+    int ReadValue;
 
     QLabel *R_value = new QLabel("R value");
     vbox->addWidget(R_value);
+    vbox->addWidget(ui->RminValue_lineEdit);
     vbox->addWidget(ui->RminValue_Slider);
-    ui->RminValue_Slider->setSliderPosition(
-            this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Red));
+    ReadValue = this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Red);
+    ui->RminValue_Slider->setSliderPosition(ReadValue);
+    ui->RminValue_lineEdit->setText(QString::number(ReadValue));
 
     QLabel *G_value = new QLabel("G value");
     vbox->addWidget(G_value);
+    vbox->addWidget(ui->GminValue_lineEdit);
     vbox->addWidget(ui->GminValue_Slider);
-    ui->GminValue_Slider->setSliderPosition(
-            this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Green));
+    ReadValue = this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Green);
+    ui->GminValue_Slider->setSliderPosition(ReadValue);
+    ui->GminValue_lineEdit->setText(QString::number(ReadValue));
 
     QLabel *B_value = new QLabel("B value");
     vbox->addWidget(B_value);
+    vbox->addWidget(ui->BminValue_lineEdit);
     vbox->addWidget(ui->BminValue_Slider);
-    ui->BminValue_Slider->setSliderPosition(
-            this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Blue));
+    ReadValue = this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Green);
+    ui->BminValue_Slider->setSliderPosition(ReadValue);
+    ui->BminValue_lineEdit->setText(QString::number(ReadValue));
 
     vbox->addStretch(1);
     ui->minRGBvalues_groupBox->setLayout(vbox);
@@ -353,30 +360,47 @@ void MainWindow::createMinRGBvaluesBox()
 
     connect(ui->BminValue_Slider, SIGNAL(valueChanged(int)),
             this->ImPrWorker, SLOT(changeMinRGBvalue(int)) );
+
+    // connect sliders to edit lines
+    connect(ui->RminValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(showChangedMinRGBvalues(int)));
+
+    connect(ui->GminValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(showChangedMinRGBvalues(int)));
+
+    connect(ui->BminValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(showChangedMinRGBvalues(int)));
 }
 
 
 void MainWindow::createMaxRGBvaluesBox()
 {
     QVBoxLayout *vbox = new QVBoxLayout;
+    int ReadValue;
 
     QLabel *R_value = new QLabel("R value");
     vbox->addWidget(R_value);
+    vbox->addWidget(ui->RmaxValue_lineEdit);
     vbox->addWidget(ui->RmaxValue_Slider);
-    ui->RmaxValue_Slider->setSliderPosition(
-            this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Red));
+    ReadValue = this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Red);
+    ui->RmaxValue_Slider->setSliderPosition(ReadValue);
+    ui->RmaxValue_lineEdit->setText(QString::number(ReadValue));
 
     QLabel *G_value = new QLabel("G value");
     vbox->addWidget(G_value);
+    vbox->addWidget(ui->GmaxValue_lineEdit);
     vbox->addWidget(ui->GmaxValue_Slider);
-    ui->GmaxValue_Slider->setSliderPosition(
-            this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Green));
+    ReadValue = this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Green);
+    ui->GmaxValue_Slider->setSliderPosition(ReadValue);
+    ui->GmaxValue_lineEdit->setText(QString::number(ReadValue));
 
     QLabel *B_value = new QLabel("B value");
     vbox->addWidget(B_value);
+    vbox->addWidget(ui->BmaxValue_lineEdit);
     vbox->addWidget(ui->BmaxValue_Slider);
-    ui->BmaxValue_Slider->setSliderPosition(
-            this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Blue));
+    ReadValue = this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Blue);
+    ui->BmaxValue_Slider->setSliderPosition(ReadValue);
+    ui->BmaxValue_lineEdit->setText(QString::number(ReadValue));
 
     vbox->addStretch(1);
     ui->maxRGBvalues_groupBox->setLayout(vbox);
@@ -389,6 +413,14 @@ void MainWindow::createMaxRGBvaluesBox()
 
     connect(ui->BmaxValue_Slider, SIGNAL(valueChanged(int)),
             this->ImPrWorker, SLOT(changeMaxRGBvalue(int)) );
+
+    // connect sliders to edit lines
+    connect(ui->RmaxValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(showChangedMaxRGBvalues(int)));
+    connect(ui->GmaxValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(showChangedMaxRGBvalues(int)));
+    connect(ui->BmaxValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(showChangedMaxRGBvalues(int)));
 }
 
 
@@ -588,4 +620,55 @@ void MainWindow::closeEvent(QCloseEvent *event)
     qWarning() << "Save parameters to the file";
     this->saveParameters(file);
     event->accept();
+}
+
+
+
+void MainWindow::showChangedMinRGBvalues(int Value)
+{
+    QString SenderName = this->sender()->objectName();
+
+    // Sliders which change these values should have
+    // 'R', 'G' or 'B' sign on the first place in the string
+    // e.g. RminValue_Slider , GminValue_Slider, BminValue_Slider
+    QChar Colour = SenderName[0];
+
+    // change QChar to char and check the value
+    switch( Colour.unicode() ) {
+    case 'R':
+        ui->RminValue_lineEdit->setText(QString::number(Value));
+        break;
+    case 'G':
+        ui->GminValue_lineEdit->setText(QString::number(Value));
+        break;
+    case 'B':
+        ui->BminValue_lineEdit->setText(QString::number(Value));
+        break;
+    }
+    //qWarning() <<  Value;
+}
+
+
+
+void MainWindow::showChangedMaxRGBvalues(int Value)
+{
+    QString SenderName = this->sender()->objectName();
+
+    // Sliders which change these values should have
+    // 'R', 'G' or 'B' sign on the first place in the string
+    // e.g. RminValue_Slider , GminValue_Slider, BminValue_Slider
+    QChar Colour = SenderName[0];
+
+    // change QChar to char and check the value
+    switch( Colour.unicode() ) {
+    case 'R':
+        ui->RmaxValue_lineEdit->setText(QString::number(Value));
+        break;
+    case 'G':
+        ui->GmaxValue_lineEdit->setText(QString::number(Value));
+        break;
+    case 'B':
+        ui->BmaxValue_lineEdit->setText(QString::number(Value));
+        break;
+    }
 }
