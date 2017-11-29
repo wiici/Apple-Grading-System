@@ -149,6 +149,10 @@ public:
 
 	int getSecondThresholdValue();
 
+	int getMinRGBvalue(int Colour);
+
+	int getMaxRGBvalue(int Colour);
+
 
 	/**
 	 * @brief Connect to the attached camera.

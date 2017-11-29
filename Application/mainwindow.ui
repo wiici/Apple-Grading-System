@@ -476,7 +476,7 @@
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
     </property>
-    <widget class="QSlider" name="maxRvalue_Slider">
+    <widget class="QSlider" name="RmaxValue_Slider">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -516,7 +516,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-    <widget class="QSlider" name="maxGvalue_Slider">
+    <widget class="QSlider" name="GmaxValue_Slider">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -556,7 +556,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-    <widget class="QSlider" name="maxBvalue_Slider">
+    <widget class="QSlider" name="BmaxValue_Slider">
      <property name="geometry">
       <rect>
        <x>10</x>

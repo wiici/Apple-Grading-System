@@ -52,6 +52,8 @@ private:
     void createDeviceVariablesBox();
     void createMinRGBvaluesBox();
     void createMaxRGBvaluesBox();
+    void saveParameters(QFile& File);
+    void readParametersFromFile();
 
 signals:
     void setDefaultIndex(QString InitValue);
@@ -87,6 +89,7 @@ public slots:
 private slots:
     void UARTdisconnected();
     void UARTconnected();
+    void closeEvent(QCloseEvent *event);
 
 
 };

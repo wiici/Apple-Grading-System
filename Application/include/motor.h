@@ -12,11 +12,15 @@ class Motor : public QObject {
 public:
     Motor(QPushButton *Motor_ON_OFF_BUtton, QSlider *MotorSpeed, QObject *parent = 0 );
     ~Motor();
+    int getSpeedValue();
+    bool get_isEnable();
 
+    void setInitSpeed(int value);
 
 public slots:
     void setSpeed();
     void UARTconnected();
+
 
 
 signals:

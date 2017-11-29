@@ -38,6 +38,7 @@ private:
     void setSlidersRange();
     void setSlidersInitValue();
 
+
 signals:
     void sendFrame(cv::Mat *Image);
     void connectStatusHasChanged(QString);
@@ -51,6 +52,7 @@ public slots:
     void changeSetup(QString SelectedItemText);
     void changeThresholdValue(int value);
     void changeMinRGBvalue(int value);
+    void changeMaxRGBvalue(int value);
 
 private slots:
     void enableWidgets();

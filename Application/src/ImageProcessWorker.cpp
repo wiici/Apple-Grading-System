@@ -128,6 +128,31 @@ void ImageProcessWorker::changeMinRGBvalue(int value)
         set_minRGBvalue(Blue, value);
         break;
     }
+    qWarning() <<  value;
+}
+
+void ImageProcessWorker::changeMaxRGBvalue(int value)
+{
+    QString SenderName = this->sender()->objectName();
+
+    // Sliders which change these values should have
+    // 'R', 'G' or 'B' sign on the first place in the string
+    // e.g. RminValue_Slider , GminValue_Slider, BminValue_Slider
+    QChar Colour = SenderName[0];
+
+    // change QChar to char and check the value
+    switch( Colour.unicode() ) {
+    case 'R':
+        set_maxRGBvalue(Red, value);
+        break;
+    case 'G':
+        set_maxRGBvalue(Green, value);
+        break;
+    case 'B':
+        set_maxRGBvalue(Blue, value);
+        break;
+    }
+    qWarning() <<  value;
 }
 
 //*************************************************

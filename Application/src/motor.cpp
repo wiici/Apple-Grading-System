@@ -32,6 +32,20 @@ Motor::~Motor()
 
 }
 
+int Motor::getSpeedValue()
+{
+    return this->MotorSpeedSlider->value();
+}
+
+bool Motor::get_isEnable()
+{
+    return this->isEnable;
+}
+
+void Motor::setInitSpeed(int value)
+{
+    this->MotorSpeedSlider->setSliderPosition(value);
+}
 
 void Motor::setSpeed()
 {

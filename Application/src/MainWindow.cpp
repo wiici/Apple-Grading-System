@@ -8,6 +8,7 @@
 #include <opencv2/videoio.hpp>
 
 #include <QLabel>
+#include <QCloseEvent>
 
 MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     QMainWindow(parent),
@@ -44,9 +45,15 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
 
     this->connectSignalsToSlots();
 
+    this->readParametersFromFile();
+
     this->createImageProcessingThread();
     this->createCameraParametersBox();
     this->createImageProcessingVarablesBox();
+    this->createMinRGBvaluesBox();
+    this->createMaxRGBvaluesBox();
+
+
 }
 
 MainWindow::~MainWindow()
@@ -293,14 +300,20 @@ void MainWindow::createMinRGBvaluesBox()
     QLabel *R_value = new QLabel("R value");
     vbox->addWidget(R_value);
     vbox->addWidget(ui->RminValue_Slider);
+    ui->RminValue_Slider->setSliderPosition(
+            this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Red));
 
     QLabel *G_value = new QLabel("G value");
     vbox->addWidget(G_value);
     vbox->addWidget(ui->GminValue_Slider);
+    ui->GminValue_Slider->setSliderPosition(
+            this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Green));
 
     QLabel *B_value = new QLabel("B value");
     vbox->addWidget(B_value);
     vbox->addWidget(ui->BminValue_Slider);
+    ui->BminValue_Slider->setSliderPosition(
+            this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Blue));
 
     vbox->addStretch(1);
     ui->minRGBvalues_groupBox->setLayout(vbox);
@@ -322,21 +335,101 @@ void MainWindow::createMaxRGBvaluesBox()
 
     QLabel *R_value = new QLabel("R value");
     vbox->addWidget(R_value);
-    vbox->addWidget(ui->maxRvalue_Slider);
+    vbox->addWidget(ui->RmaxValue_Slider);
+    ui->RmaxValue_Slider->setSliderPosition(
+            this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Red));
 
     QLabel *G_value = new QLabel("G value");
     vbox->addWidget(G_value);
-    vbox->addWidget(ui->maxGvalue_Slider);
+    vbox->addWidget(ui->GmaxValue_Slider);
+    ui->GmaxValue_Slider->setSliderPosition(
+            this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Green));
 
     QLabel *B_value = new QLabel("B value");
     vbox->addWidget(B_value);
-    vbox->addWidget(ui->maxBvalue_Slider);
+    vbox->addWidget(ui->BmaxValue_Slider);
+    ui->BmaxValue_Slider->setSliderPosition(
+            this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Blue));
 
     vbox->addStretch(1);
     ui->maxRGBvalues_groupBox->setLayout(vbox);
 
+    connect(ui->RmaxValue_Slider, SIGNAL(valueChanged(int)),
+            this->ImPrWorker, SLOT(changeMaxRGBvalue(int)) );
+
+    connect(ui->GmaxValue_Slider, SIGNAL(valueChanged(int)),
+            this->ImPrWorker, SLOT(changeMaxRGBvalue(int)) );
+
+    connect(ui->BmaxValue_Slider, SIGNAL(valueChanged(int)),
+            this->ImPrWorker, SLOT(changeMaxRGBvalue(int)) );
 }
 
+
+void MainWindow::saveParameters(QFile& File)
+{
+    QTextStream ostream(&File);
+
+    // save min RGB values
+    ostream << this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Red) << " "
+            << this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Green) << " "
+            << this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Blue) << endl;
+
+    //save max RGB values
+    ostream << this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Red) << " "
+            << this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Green) << " "
+            << this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Blue) << endl;
+
+    //save camera parameters
+    ostream << this->ImPrWorker->getCameraBrightness() << " "
+            << this->ImPrWorker->getCameraSaturation() << " "
+            << this->ImPrWorker->getCameraContrast() << endl;
+
+    // save motor speed value
+    ostream << this->motor->getSpeedValue() << endl;
+}
+
+void MainWindow::readParametersFromFile()
+{
+    QFile file("SavedParameters.txt");
+    file.open(QFile::ReadOnly);
+
+    if( !file.isOpen() ) {
+        qWarning() << "MainWindow::readParametersFromFile: Cant open the file";
+        return;
+    }
+
+    QTextStream istream(&file);
+
+    int value;
+    double CameraParameters;
+
+    // read the min RGB values
+    istream >> value;
+    this->ImPrWorker->set_minRGBvalue(this->ImPrWorker->Red, value);
+    istream >> value;
+    this->ImPrWorker->set_minRGBvalue(this->ImPrWorker->Green, value);
+    istream >> value;
+    this->ImPrWorker->set_minRGBvalue(this->ImPrWorker->Blue, value);
+
+    // read the max RGB values
+    istream >> value;
+    this->ImPrWorker->set_maxRGBvalue(this->ImPrWorker->Red, value);
+    istream >> value;
+    this->ImPrWorker->set_maxRGBvalue(this->ImPrWorker->Green, value);
+    istream >> value;
+    this->ImPrWorker->set_maxRGBvalue(this->ImPrWorker->Blue, value);
+
+    // read the camera parameters
+    istream >> CameraParameters;
+    this->ImPrWorker->setCameraBrightness(CameraParameters);
+    istream >> CameraParameters;
+    this->ImPrWorker->setCameraSaturation(CameraParameters);
+    istream >> CameraParameters;
+    this->ImPrWorker->setCameraContrast(CameraParameters);
+
+    istream >> value;
+    this->motor->setInitSpeed(value);
+}
 
 
 
@@ -393,6 +486,7 @@ void MainWindow::connectSignalsToSlots()
             this->UART, SLOT(sendMessage(const QString*,const QString*,int)));
 
 
+
 }
 
 
@@ -433,4 +527,29 @@ void MainWindow::UARTdisconnected()
 void MainWindow::UARTconnected()
 {
     ui->DeviceVariables_groupBox->setEnabled(true);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QMessageBox saveOrNot;
+    saveOrNot.setText("Do you want to save the parameters?");
+    saveOrNot.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+    int UserReply = saveOrNot.exec();
+
+    if(UserReply == QMessageBox::No) {
+        event->accept();
+        return;
+    }
+
+    QFile file("SavedParameters.txt");
+
+    if( !file.open(QFile::ReadWrite) ) {
+        qWarning() << "MainWindow::closeEvent_cantOpenFile";
+        event->accept();
+        return;
+    }
+    qWarning() << "Save parameters to the file";
+    this->saveParameters(file);
+    event->accept();
 }

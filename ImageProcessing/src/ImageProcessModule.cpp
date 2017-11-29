@@ -91,8 +91,7 @@ void ImageProcessModule::setSecondThresholdValue(int Value)
 
 void ImageProcessModule::set_minRGBvalue(int colour, int Value)
 {
-
-	if(colour < 3)
+	if(colour > 2)
 		return;
 
 	if(Value > 255 )
@@ -105,7 +104,7 @@ void ImageProcessModule::set_minRGBvalue(int colour, int Value)
 
 void ImageProcessModule::set_maxRGBvalue(int colour, int Value)
 {
-	if(colour < 3)
+	if(colour > 2)
 		return;
 
 	if(Value > 255 )
@@ -179,6 +178,21 @@ int ImageProcessModule::getSecondThresholdValue()
 	return this->SecondThresholdValue;
 }
 
+int ImageProcessModule::getMinRGBvalue(int Colour)
+{
+	if(Colour > 2)
+		return -1;
+
+	return this->minRGBvalues[Colour];
+}
+
+int ImageProcessModule::getMaxRGBvalue(int Colour)
+{
+	if(Colour > 2)
+		return -1;
+
+	return this->maxRGBvalues[Colour];
+}
 
 bool ImageProcessModule::connectToCamera(int CameraID) {
 
