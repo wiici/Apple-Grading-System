@@ -35,6 +35,36 @@ public:
     explicit MainWindow(const QString WindowName, QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    /** @brief Show a list of connected cameras.
+     *
+    */
+    void ShowConnectedCameras();
+    /**
+     * @brief Set a inital configuration.
+     */
+    void setInitConf();
+    /**
+     * @brief Display an image if a checkbox is selected.
+     */
+    void displayImages();
+    void changeThreshold(int Value);
+    /**
+     * @brief Create windows where images will be displayed.
+     */
+    void setWindowsWithImages();
+    void receive_cameraConnectionEstablished();
+    void receive_lostCameraConnection();
+    void selectAllCheckBoxes(int status);
+    void changeSecondThresholdValue(int value);
+    void cantFindSerialPorts();
+    /**
+     * @brief Notice user about error.
+     */
+    void informCannotConnectToCamera();
+
+signals:
+    void setDefaultIndex(QString InitValue);
 
 private:
     Ui::MainWindow *ui;
@@ -55,41 +85,12 @@ private:
     void saveParameters(QFile& File);
     void readParametersFromFile();
 
-signals:
-    void setDefaultIndex(QString InitValue);
-public slots:
-
-    /** @brief Show a list of connected cameras.
-     *
-    */
-    void ShowConnectedCameras();
-    /**
-     * @brief Set a inital configuration.
-     */
-    void setInitConf();
-    /**
-     * @brief Notice user about error.
-     */
-    void informCannotConnectToCamera();
-    /**
-     * @brief Display an image if a checkbox is selected.
-     */
-    void displayImages();
-    void changeThreshold(int Value);
-    /**
-     * @brief Create windows where images will be displayed.
-     */
-    void setWindowsWithImages();
-    void receive_cameraConnectionEstablished();
-    void receive_lostCameraConnection();
-    void selectAllCheckBoxes(int status);
-    void cantFindSerialPorts();
-    void changeSecondThresholdValue(int value);
-
 private slots:
     void UARTdisconnected();
     void UARTconnected();
     void closeEvent(QCloseEvent *event);
+
+
 
 
 };

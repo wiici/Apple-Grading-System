@@ -34,8 +34,7 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     ui->thresholdValue_Slider->setSliderPosition(50);
     ui->secondThresholdValue_Slider->setSliderPosition(this->ImPrWorker->getSecondThresholdValue());
 
-    this->createImageTypesBox();
-
+    // disable some widgets at the beginning
     ui->ImageTypes_groupBox->setDisabled(true);
     ui->CameraParameters_groupBox->setDisabled(true);
     ui->ImageProcessingVariables_groupBox->setDisabled(true);
@@ -48,12 +47,13 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     this->readParametersFromFile();
 
     this->createImageProcessingThread();
+
+    // add items to the proper group box
+    this->createImageTypesBox();
     this->createCameraParametersBox();
     this->createImageProcessingVarablesBox();
     this->createMinRGBvaluesBox();
     this->createMaxRGBvaluesBox();
-
-
 }
 
 MainWindow::~MainWindow()
@@ -71,11 +71,14 @@ MainWindow::~MainWindow()
 }
 
 
-//*************************************************
+
+
+//*********************************************************************************
 //
-//              SLOTS
+//              PUBLIC SLOTS
 //
 //
+
 
 // show all available video capture devices in the ComboBox
 void MainWindow::ShowConnectedCameras() {
@@ -111,17 +114,7 @@ void MainWindow::ShowConnectedCameras() {
         QMessageBox::warning(this, "Warning", "Can't find any camera");
 }
 
-void MainWindow::displayImages()
-{
-    for(unsigned int i=0; i < (this->ImPrWorker->WindowNameMap.size()); i++)
-    {
-        if(this->ListOfCheckBoxes[i]->isChecked())
-        {
-            cv::namedWindow(ImPrWorker->WindowNameMap[i], cv::WINDOW_AUTOSIZE);
-            cv::imshow(ImPrWorker->WindowNameMap[i], *(this->ImPrWorker->Images[i]));
-        }
-    }
-}
+
 
 void MainWindow::setInitConf()
 {
@@ -136,10 +129,21 @@ void MainWindow::setInitConf()
     emit setDefaultIndex("Select camera");
 }
 
-void MainWindow::informCannotConnectToCamera()
+
+
+void MainWindow::displayImages()
 {
-    QMessageBox::warning(this, "Error", "Can't connect to the camera");
+    for(unsigned int i=0; i < (this->ImPrWorker->WindowNameMap.size()); i++)
+    {
+        // Check if an image should be displayed and check if the image has some data
+        if(this->ListOfCheckBoxes[i]->isChecked() && !(this->ImPrWorker->Images[i]->empty()) )
+        {
+            cv::namedWindow(ImPrWorker->WindowNameMap[i], cv::WINDOW_AUTOSIZE);
+            cv::imshow(ImPrWorker->WindowNameMap[i], *(this->ImPrWorker->Images[i]));
+        }
+    }
 }
+
 
 
 void MainWindow::changeThreshold(int Value)
@@ -147,10 +151,7 @@ void MainWindow::changeThreshold(int Value)
     this->ImPrWorker->setThresholdValue(Value);
 }
 
-void MainWindow::changeSecondThresholdValue(int value)
-{
-    this->ImPrWorker->setSecondThresholdValue(value);
-}
+
 
 void MainWindow::setWindowsWithImages()
 {
@@ -162,6 +163,8 @@ void MainWindow::setWindowsWithImages()
             cv::namedWindow(this->ImPrWorker->WindowNameMap[i], cv::WINDOW_AUTOSIZE);
     }
 }
+
+
 
 void MainWindow::receive_cameraConnectionEstablished()
 {
@@ -185,17 +188,6 @@ void MainWindow::receive_cameraConnectionEstablished()
 }
 
 
-void MainWindow::selectAllCheckBoxes(int status)
-{
-    qWarning() << "TEST dsad sd ads sd a";
-    for(unsigned int i=0; i < this->ImPrWorker->WindowNameMap.size(); i++) {
-        this->ListOfCheckBoxes[i]->setChecked(status);
-
-        if(!status)
-            cv::destroyWindow(this->ImPrWorker->WindowNameMap[i]);
-    }
-
-}
 
 void MainWindow::receive_lostCameraConnection()
 {
@@ -205,14 +197,49 @@ void MainWindow::receive_lostCameraConnection()
 
 }
 
+
+
+void MainWindow::selectAllCheckBoxes(int status)
+{
+    for(unsigned int i=0; i < this->ImPrWorker->WindowNameMap.size(); i++) {
+        this->ListOfCheckBoxes[i]->setChecked(status);
+
+        if(!status)
+            cv::destroyWindow(this->ImPrWorker->WindowNameMap[i]);
+    }
+
+}
+
+
+
+void MainWindow::changeSecondThresholdValue(int value)
+{
+    this->ImPrWorker->setSecondThresholdValue(value);
+}
+
+
+
 void MainWindow::cantFindSerialPorts()
 {
     QMessageBox::warning(this, "Warning", "Can't find any serial port");
 }
 
-//*************************************************
+
+
+void MainWindow::informCannotConnectToCamera()
+{
+    QMessageBox::warning(this, "Error", "Can't connect to the camera");
+}
+
+
+
+
+
+//*************************************************************************8
 //
-//              OTHER FUNCTIONS
+//              PRIVATE FUNCTIONS
+//
+//
 //
 //
 
@@ -516,6 +543,11 @@ void MainWindow::createImageProcessingThread()
 
 
 
+//*************************************************************************8
+//
+//              PRIVATE SLOTS
+//
+//
 
 void MainWindow::UARTdisconnected()
 {
@@ -524,10 +556,14 @@ void MainWindow::UARTdisconnected()
 
 }
 
+
+
 void MainWindow::UARTconnected()
 {
     ui->DeviceVariables_groupBox->setEnabled(true);
 }
+
+
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
