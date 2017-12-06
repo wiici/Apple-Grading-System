@@ -34,6 +34,9 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     ui->reflectsThresholdValue_Slider->setSliderPosition(200);
     ui->secondThresholdValue_Slider->setSliderPosition(this->ImPrWorker->getSecondThresholdValue());
 
+    ui->textEdit->setVisible(false);
+    ui->searchSerialPorts_pushButton_2->setVisible(false);
+
     // disable some widgets at the beginning
     ui->ImageTypes_groupBox->setDisabled(true);
     ui->CameraParameters_groupBox->setDisabled(true);

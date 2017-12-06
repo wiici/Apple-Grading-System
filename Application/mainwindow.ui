@@ -62,8 +62,8 @@
    <widget class="QPushButton" name="searchSerialPorts_pushButton">
     <property name="geometry">
      <rect>
-      <x>850</x>
-      <y>10</y>
+      <x>860</x>
+      <y>100</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -75,18 +75,21 @@
    <widget class="QListWidget" name="listOfSerialPorts_listWidget">
     <property name="geometry">
      <rect>
-      <x>930</x>
-      <y>10</y>
+      <x>940</x>
+      <y>100</y>
       <width>261</width>
       <height>121</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="searchSerialPorts_pushButton_2">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
-      <x>1000</x>
-      <y>170</y>
+      <x>970</x>
+      <y>560</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -98,8 +101,8 @@
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
-      <x>1090</x>
-      <y>160</y>
+      <x>1100</x>
+      <y>540</y>
       <width>104</width>
       <height>70</height>
      </rect>
@@ -164,7 +167,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>20</y>
+      <y>10</y>
       <width>251</width>
       <height>211</height>
      </rect>
@@ -337,8 +340,8 @@
    <widget class="QGroupBox" name="DeviceVariables_groupBox">
     <property name="geometry">
      <rect>
-      <x>1000</x>
-      <y>280</y>
+      <x>980</x>
+      <y>240</y>
       <width>191</width>
       <height>261</height>
      </rect>
@@ -406,7 +409,7 @@
    <widget class="QGroupBox" name="minRGBvalues_groupBox">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>20</x>
       <y>270</y>
       <width>351</width>
       <height>321</height>
@@ -599,8 +602,8 @@
    <widget class="QGroupBox" name="maxRGBvalues_groupBox">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>280</y>
+      <x>400</x>
+      <y>270</y>
       <width>361</width>
       <height>331</height>
      </rect>
