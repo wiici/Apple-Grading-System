@@ -98,7 +98,7 @@ TEST(imagePreProcessing, default)
 	test.connectToCamera(CAMERA_ID);
 	test.setReflectsThresholdValue(50);
 
-
+/*
 	while(true)
 	{
 		test.grabImage();
@@ -107,7 +107,7 @@ TEST(imagePreProcessing, default)
 		cv::imshow("obraz", *(test.getBinaryImage()));
 		cv::waitKey(25);
 	}
-
+*/
 
 }
 
@@ -116,8 +116,6 @@ TEST(createClassifier_Test, default)
 
 	ImageProcessModule test;
 	test.setReflectsThresholdValue(30);
-	test.setSecondThresholdValue(80);
-	std::cout << "Second: " << test.getSecondThresholdValue() << std::endl;
 	test.set_minRGBvalue(0, 50);
 	//std::cout << "R:  " << test.get << std::endl;
 	test.create_kNN_Classifier();

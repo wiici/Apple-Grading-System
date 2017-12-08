@@ -24,7 +24,6 @@ ImageProcessModule::ImageProcessModule(int InitThresholdValue, int InitRadius) :
 
 	this->SourceImage = new cv::Mat();
 	this->GrayScaleImage = new cv::Mat();
-	this->HSV_Image = new cv::Mat();
 	this->BinaryImage = new cv::Mat();
 	this->LightReflectionsImage = new cv::Mat();
 
@@ -36,7 +35,6 @@ ImageProcessModule::~ImageProcessModule()
 
 	this->SourceImage->~Mat();
 	this->GrayScaleImage->~Mat();
-	this->HSV_Image->~Mat();
 	this->BinaryImage->~Mat();
 	this->LightReflectionsImage->~Mat();
 
@@ -80,22 +78,9 @@ bool ImageProcessModule::setCameraContrast(double Value)
 	return this->Camera->set(cv::CAP_PROP_CONTRAST, Value);
 }
 
-void ImageProcessModule::setSecondThresholdValue(int Value)
-{
-	if(Value > 255) {
-		this->SecondThresholdValue = 255;
-		return;
-	}
-	else if(Value < 0) {
-		this->SecondThresholdValue = 0;
-		return;
-	}
-
-	this->SecondThresholdValue = Value;
-}
-
 void ImageProcessModule::set_minRGBvalue(int colour, int Value)
 {
+	// colour means R, G or B channel
 	if(colour > 2)
 		return;
 
@@ -153,10 +138,6 @@ cv::Mat* ImageProcessModule::getGrayscaleImage() {
 	return GrayScaleImage;
 }
 
-cv::Mat* ImageProcessModule::getHSV_Image() {
-	return HSV_Image;
-}
-
 cv::Mat* ImageProcessModule::getBinaryImage() {
 	return BinaryImage;
 }
@@ -199,12 +180,6 @@ double ImageProcessModule::getCameraContrast()
 	return this->Camera->get(cv::CAP_PROP_CONTRAST);
 }
 
-
-int ImageProcessModule::getSecondThresholdValue()
-{
-	return this->SecondThresholdValue;
-}
-
 int ImageProcessModule::getMinRGBvalue(int Colour)
 {
 	if(Colour > 2)
@@ -237,15 +212,21 @@ bool ImageProcessModule::connectToCamera(int CameraID) {
 void ImageProcessModule::imagePreProcessing() {
 
 	// RGB -> Grayscale
-	cv::cvtColor(*SourceImage, *HSV_Image, CV_BGR2HSV);
-
 	cv::cvtColor(*SourceImage, *GrayScaleImage, CV_BGR2GRAY);
+
+	// reduce noise before thresholding
+	cv::medianBlur(*(GrayScaleImage), *(GrayScaleImage), 3);
+
+	// thresholding gray scale image to get an area with light reflects
 	cv::threshold(*GrayScaleImage, *LightReflectionsImage,
 				  this->ReflectsThresholdValue, 255, cv::THRESH_BINARY);
 
 	cv::Mat tmp = *(SourceImage);
 
+	// remove light reflects
 	cv::inpaint(tmp, *LightReflectionsImage, *SourceImage, this->InpaintRadius, cv::INPAINT_NS);
+
+	//cv::threshold(*(this->GrayScaleImage), *(this->HSV_Image), 10, 255, cv::THRESH_OTSU);
 
 	// blur an image to reduce a noise (a mask 3x3)
 	//cv::blur( *(this->GrayScaleImage), *(this->GrayScaleImage), cv::Size(3,3) );
@@ -253,6 +234,7 @@ void ImageProcessModule::imagePreProcessing() {
 	//cv::threshold(*(this->GrayScaleImage), *(this->BinaryImage),
 		//	  this->ThresholdValue, 255, cv::THRESH_BINARY);
 }
+
 
 bool ImageProcessModule::grabImage() {
 	if(this->Camera->isOpened())
@@ -275,59 +257,38 @@ void ImageProcessModule::displayImages() {
 
 void ImageProcessModule::imageSegmentation() {
 
-
-	cv::inRange(*(this->HSV_Image),
+	cv::inRange(*(this->SourceImage),
 			cv::Scalar(minRGBvalues[Blue], minRGBvalues[Green], minRGBvalues[Red]),
 			cv::Scalar(maxRGBvalues[Blue], maxRGBvalues[Green], maxRGBvalues[Red]),
 			*(this->BinaryImage) );
+	cv::Mat element = cv::getStructuringElement( 2, cv::Size( 5,5 ), cv::Point( 0,0) );
+	cv::Mat tmp = *(this->BinaryImage);
+	//cv::morphologyEx(tmp, *(this->BinaryImage),
+		//		     cv::MORPH_OPEN, element);
 
-	//thresh_callback(0,0);
+	drawSegmentationArea();
 
 }
 
-/** @function thresh_callback */
-void ImageProcessModule::thresh_callback(int, void* )
+
+void ImageProcessModule::drawSegmentationArea()
 {
-	/*
-	cv::Mat canny_output;
 	std::vector<std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;
-	cv::RNG rng(12345);
-
-	/// Detect edges using canny
-	cv::Canny( *(this->GrayScaleImage), *(this->BinaryImage), ThresholdValue, SecondThresholdValue, 3 );
-
 
 	/// Find contours
 	cv::findContours( *(this->BinaryImage), contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
-	/// Get the moments
-	std::vector<cv::Moments> mu(contours.size() );
-	for( unsigned int i = 0; i < contours.size(); i++ )
-	{ mu[i] = moments( contours[i], false ); }
 
-	///  Get the mass centers:
-	std::vector<cv::Point2f> mc( contours.size() );
 	for( unsigned int i = 0; i < contours.size(); i++ )
-	{ mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); }
-	/// Draw contours
-	//(this->ContoursImage)= cv::Mat::zeros( this->BinaryImage->size(), CV_8UC3 );
-	std::cout << "Contours ssize: " << contours.size() << std::endl;
-
-	for( unsigned int i = 0; i< contours.size(); i++ )
 	{
-		// set white color of contours
-		cv::Scalar color = cv::Scalar( 255, 255, 255 );
-		cv::drawContours( *(this->ContoursImage), contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
-		circle( *(this->ContoursImage), mc[i], 4, color, -1, 8, 0 );
+		// sip small aread (propably some noise)
+		if(cv::contourArea(contours[i]) > 200) {
+			cv::Rect BoundingRect = cv::boundingRect(contours[i]);
+
+			cv::rectangle(*(this->SourceImage), BoundingRect,
+					  	  cv::Scalar(0,0,255), 4);
+		}
 	}
-	*/
-
-	 //Show in a window
-	//cv::namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
-	//cv::imshow( "Contours", *(this->BinaryImage) );
-
-	//cv::waitKey(0);
-
 }
 
 

@@ -19,14 +19,6 @@
 #include <string.h>
 
 
-struct FeaturesVector {
-
-
-};
-
-typedef struct FeaturesVector FeaturesVector;
-
-
 /**
  *
  * Using the OpenCV library, the class implements functions which are using in
@@ -37,13 +29,10 @@ class ImageProcessModule
 {
 private:
 
-
 	cv::Mat* SourceImage;
 	cv::Mat* GrayScaleImage;
-	cv::Mat* HSV_Image;
 	cv::Mat* BinaryImage;
 	cv::Mat* LightReflectionsImage;
-
 
 	cv::VideoCapture* Camera;
 
@@ -52,10 +41,7 @@ private:
 	int InpaintRadius;
 	int SecondThresholdValue;
 
-
-
-
-
+	// threshold values for apple defects segmentation
 	int minRGBvalues[3];
 	int maxRGBvalues[3];
 
@@ -63,6 +49,9 @@ private:
 								ClassI,
 								ClassII,
 								Rejected};
+
+	// draw red rectangle around the apple defects after segmentation
+	void drawSegmentationArea();
 
 
 public:
@@ -91,27 +80,66 @@ public:
 	 */
 	void setReflectsThresholdValue(int Value);
 
-	void setSecondThresholdValue(int value);
-
+	/**
+	 * @brief Set camera brightness (it depends on the camera)
+	 *
+	 * @param Double Value to set from 0.0 to 1.0
+	 *
+	 * @return true if succeed
+	 */
 	bool setCameraBrightness(double Value);
 
+	/**
+	 * @brief Set camera saturation (it depends on the camera)
+	 *
+	 * @param Double Value to set from 0.0 to 1.0
+	 *
+	 * @return true if succeed
+	 */
 	bool setCameraSaturation(double Value);
 
+	/**
+	 * @brief Set camera contrast (it depends on the camera)
+	 *
+	 * @param Double Value to set from 0.0 to 1.0
+	 *
+	 * @return true if succeed
+	 */
 	bool setCameraContrast(double Value);
 
+	/**
+	 * @brief Set minimal value for R,G or B channel
+	 *
+	 * @param colour is a colour number (see Colour) indicates which channel should be set.
+	 *
+	 * @param value from 0 to 255
+	 */
 	void set_minRGBvalue(int colour, int value);
 
+	/**
+	 * @brief Set maximal value for R,G or B channel
+	 *
+	 * @param colour is a colour number (see Colour) indicates which channel should be set.
+	 *
+	 * @param value from 0 to 255
+	 */
 	void set_maxRGBvalue(int colour, int Value);
 
+	/** @brief set number of neighbours that will be taken into account in the cv::inpaint
+	 *  function to get rid of area with light reflects.
+	 *
+	 *  @param Value depends on the effects you want to get (usually it is set to 3 or 4)
+	 */
 	void setInpaintRadius(int Value);
 
 	/**
-	 * @brief Getter
-	 *
-	 * @return The actual threshold value.
-	 */
+	 * @brief Get threshold value to get rid of areas with light reflects.
+	*/
 	int getReflectsThresholdValue();
 
+	/**
+	 * @brief Get inpaint radius (see cv::inpaint)
+	 */
 	int getInpaintRadius();
 
 	/**
@@ -136,9 +164,12 @@ public:
 	 */
 	cv::Mat* getBinaryImage();
 
+	/*
+	 * @brief Get the pointer to the image with an area of light reflects.
+	 */
 	cv::Mat* getLightReflectionsImage();
 
-	cv::Mat* getHSV_Image();
+	//cv::Mat* getHSV_Image();
 
 	/**
 	 * @brief Getter
@@ -147,10 +178,19 @@ public:
 	 */
 	cv::VideoCapture* getCamera();
 
+	/**
+	 * @brief Get information about width of camera frame.
+	 */
 	int getCameraFrameWidth();
 
+	/**
+	 * @brief Get information about height of camera frame.
+	 */
 	int getCameraFrameHeight();
 
+	/**
+	 * @brief Get information about camera FPS parameter.
+	 */
 	int getCameraFrameRate();
 
 	double getCameraBrightness();
@@ -159,10 +199,18 @@ public:
 
 	double getCameraContrast();
 
-	int getSecondThresholdValue();
-
+	/**
+	 * @brief Get the minimal value of R,G or B channel.
+	 *
+	 * @param Colour indicates which colour you want to get (see Colour)
+	 */
 	int getMinRGBvalue(int Colour);
 
+	/**
+	 * @brief Get the maximal value of R,G or B channel.
+	 *
+	 * @param Colour indicates which colour you want to get (see Colour)
+	 */
 	int getMaxRGBvalue(int Colour);
 
 
@@ -199,17 +247,28 @@ public:
 	 *
 	 * Prepare the image for the next operations. Stages:
 	 *  - change the image from RGB to grayscale (using @link cv::cvtColor @endlink).
-	 *  - change the image from grayscale to binary using Otsu's thresholding
-	 *    (using @link cv::threshold @endlink).
+	 *  - reduce noise from image (see cv::medianBlur)
+	 *  - get binary image with light reflects (cv::threshold) and inpaint this region (cV::inpaint)
 	 *
 	 *
 	 */
 	void imagePreProcessing();
 
-	void thresh_callback(int, void* );
-
+	/**
+	 * @brief Get area with apple defects (use cv::inRange function).
+	 *
+	 *
+	 */
 	void imageSegmentation();
 
+
+	/**
+	 * @brief Create k-N classifier based on training images
+	 *
+	 * This function creates k-NN classifier based on training images and create .xml file.
+	 * In a loop, images are loaded from folder TrainingData. The image files should have names
+	 * Data0, Data1, Data2, Data3...
+	 */
 	void create_kNN_Classifier();
 
 };
