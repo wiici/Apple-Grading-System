@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QString>
 #include <map>
+
 //***************************************************
 //
 //      CONSTRUCTORS / DESTRUCTOR
@@ -20,21 +21,21 @@ ImageProcessWorker::ImageProcessWorker(QSlider *BrightnessSlider, QSlider *Satur
     int InpaintRadius = 3;
     ImageProcessModule(ReflectsInitValue, InpaintRadius);
 
+    // add available images to the map
     this->WindowNameMap[SourceImage] = "Source image";
     this->WindowNameMap[GrayScaleImage] = "Grayscale image";
-    this->WindowNameMap[HSV_Image] = "HSV Image";
     this->WindowNameMap[BoundaryImage] = "ROI Image";
     this->WindowNameMap[LightReflectsImage] = "Image with light reflects";
 
     this->Images.resize(this->WindowNameMap.size());
 
+    // get pointer to images
     Images[SourceImage] = getSourceImage();
     Images[GrayScaleImage] = getGrayscaleImage();
-    Images[HSV_Image] = getHSV_Image();
     Images[BoundaryImage] = getBinaryImage();
     Images[LightReflectsImage] = getLightReflectionsImage();
 
-
+    // set sliders for image processing
     setSlidersRange();
 
     this->BrightnessSlider->setDisabled(true);
@@ -64,7 +65,7 @@ ImageProcessWorker::~ImageProcessWorker()
 
 void ImageProcessWorker::grabImageFromCamera()
 {
-
+    // is operations succeed
     if( this->grabImage() )
     {
         this->imagePreProcessing();

@@ -14,11 +14,11 @@ class UARTservice : public QObject {
 public:
     /**
      * @brief Constructor
-     * @param testText
+     * @param testText is helpful for sending/receiving messages.
      * @param ListOfSerialPorts is a qt widget which stores all available serial ports.
      * @param InitBaudRate is a value od baud rate which is used in serial communication.
-     *        Default value is set to 115200
-     * @param parent . More details gere QObject@details
+     *        Default value is set to 115200.
+     * @param parent, more details here QObject@details
      *
      *
      */
@@ -42,9 +42,10 @@ public slots:
      *          Example of the created message look like that "MT+ON=00001".
      *          A purpose of this operation is to create
      *
-     * @param Command is
-     * @param Argument
-     * @param Value
+     * @param Command indicates what main device it is for (e.g. motor, lighting)
+     * @param Argument means an operation associated with a specific device (set motor speed,
+     *        light brightness etc.)
+     * @param Value indicates, for example, what motor speed should be set or what light brightness.
      */
     void sendMessage(const QString *Command, const QString *Argument, const int Value);
     QString receiveMessage();

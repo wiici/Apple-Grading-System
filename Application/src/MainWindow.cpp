@@ -34,8 +34,10 @@ MainWindow::MainWindow(const QString WindowName ,QWidget *parent) :
     ui->reflectsThresholdValue_Slider->setSliderPosition(200);
     ui->secondThresholdValue_Slider->setSliderPosition(this->ImPrWorker->getSecondThresholdValue());
 
+    // dont show test widgets
     ui->textEdit->setVisible(false);
     ui->searchSerialPorts_pushButton_2->setVisible(false);
+    ui->secondThresholdValue_Slider->setVisible(false);
 
     // disable some widgets at the beginning
     ui->ImageTypes_groupBox->setDisabled(true);
@@ -198,11 +200,10 @@ void MainWindow::receive_lostCameraConnection()
     this->setInitConf();
 
     QMessageBox::warning(this, "Error", "The conncetion to the camera has been lost");
-
 }
 
 
-
+// do when user will check the "Select all" check box
 void MainWindow::selectAllCheckBoxes(int status)
 {
     for(unsigned int i=0; i < this->ImPrWorker->WindowNameMap.size(); i++) {
@@ -316,10 +317,6 @@ void MainWindow::createImageProcessingVarablesBox()
     vbox->addWidget(ui->inpaintRadius_Slider);
     ui->inpaintRadius_Slider->setValue(ReadValue);
 
-    QLabel *SecondThresholdValue = new QLabel("Second threshold value");
-    vbox->addWidget(SecondThresholdValue);
-    vbox->addWidget(ui->secondThresholdValue_Slider);
-
     vbox->addStretch(1);
     ui->ImageProcessingVariables_groupBox->setLayout(vbox);
 
@@ -353,6 +350,7 @@ void MainWindow::createMinRGBvaluesBox()
     vbox->addWidget(R_value);
     vbox->addWidget(ui->RminValue_lineEdit);
     vbox->addWidget(ui->RminValue_Slider);
+    // set values in added widgets
     ReadValue = this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Red);
     ui->RminValue_Slider->setSliderPosition(ReadValue);
     ui->RminValue_lineEdit->setText(QString::number(ReadValue));
@@ -361,6 +359,7 @@ void MainWindow::createMinRGBvaluesBox()
     vbox->addWidget(G_value);
     vbox->addWidget(ui->GminValue_lineEdit);
     vbox->addWidget(ui->GminValue_Slider);
+    // set values in added widgets
     ReadValue = this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Green);
     ui->GminValue_Slider->setSliderPosition(ReadValue);
     ui->GminValue_lineEdit->setText(QString::number(ReadValue));
@@ -369,6 +368,7 @@ void MainWindow::createMinRGBvaluesBox()
     vbox->addWidget(B_value);
     vbox->addWidget(ui->BminValue_lineEdit);
     vbox->addWidget(ui->BminValue_Slider);
+    // set values in added widgets
     ReadValue = this->ImPrWorker->getMinRGBvalue(this->ImPrWorker->Green);
     ui->BminValue_Slider->setSliderPosition(ReadValue);
     ui->BminValue_lineEdit->setText(QString::number(ReadValue));
@@ -406,6 +406,7 @@ void MainWindow::createMaxRGBvaluesBox()
     vbox->addWidget(R_value);
     vbox->addWidget(ui->RmaxValue_lineEdit);
     vbox->addWidget(ui->RmaxValue_Slider);
+    // set values in added widgets
     ReadValue = this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Red);
     ui->RmaxValue_Slider->setSliderPosition(ReadValue);
     ui->RmaxValue_lineEdit->setText(QString::number(ReadValue));
@@ -414,6 +415,7 @@ void MainWindow::createMaxRGBvaluesBox()
     vbox->addWidget(G_value);
     vbox->addWidget(ui->GmaxValue_lineEdit);
     vbox->addWidget(ui->GmaxValue_Slider);
+    // set values in added widgets
     ReadValue = this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Green);
     ui->GmaxValue_Slider->setSliderPosition(ReadValue);
     ui->GmaxValue_lineEdit->setText(QString::number(ReadValue));
@@ -422,6 +424,7 @@ void MainWindow::createMaxRGBvaluesBox()
     vbox->addWidget(B_value);
     vbox->addWidget(ui->BmaxValue_lineEdit);
     vbox->addWidget(ui->BmaxValue_Slider);
+    // set values in added widgets
     ReadValue = this->ImPrWorker->getMaxRGBvalue(this->ImPrWorker->Blue);
     ui->BmaxValue_Slider->setSliderPosition(ReadValue);
     ui->BmaxValue_lineEdit->setText(QString::number(ReadValue));
@@ -533,6 +536,14 @@ void MainWindow::connectSignalsToSlots()
     connect(ui->refreshList_Button, SIGNAL(pressed()),
             this, SLOT(ShowConnectedCameras()) );
 
+    connect(ui->secondThresholdValue_Slider, SIGNAL(valueChanged(int)),
+            this, SLOT(changeSecondThresholdValue(int)));
+
+    connect(ui->searchSerialPorts_pushButton, SIGNAL(pressed()),
+            this->UART, SLOT(searchSerialPorts()) );
+
+
+    // CONNECT ImageProcessWorker SIGNALS
     connect(this->ImPrWorker, SIGNAL(lostConnection()),
             this, SLOT(setInitConf()) );
 
@@ -545,24 +556,17 @@ void MainWindow::connectSignalsToSlots()
     connect(this->ImPrWorker, SIGNAL(frameHasGrabbed()),
             this, SLOT(displayImages()));
 
-
-
-    connect(ui->secondThresholdValue_Slider, SIGNAL(valueChanged(int)),
-            this, SLOT(changeSecondThresholdValue(int)));
-
     connect(this->ImPrWorker, SIGNAL(connectionEstablished()),
             this, SLOT(receive_cameraConnectionEstablished()) );
 
     connect(this->ImPrWorker, SIGNAL(lostConnection()),
             this, SLOT(receive_lostCameraConnection()) );
 
-    connect(ui->searchSerialPorts_pushButton, SIGNAL(pressed()),
-            this->UART, SLOT(searchSerialPorts()) );
 
+
+    //  CONNECT UART SIGNALS
     connect(this->UART, SIGNAL(cantFindSerialPorts()),
             this, SLOT(cantFindSerialPorts()) );
-
-    //connect(ui->searchSerialPorts_pushButton_2, SIGNAL(pressed()), this->UART, SLOT(sendMessage()) );
 
     connect(this->UART, SIGNAL(UARTconnected()),
             this->motor, SLOT(UARTconnected()));
@@ -572,6 +576,8 @@ void MainWindow::connectSignalsToSlots()
 
     connect(this->UART, SIGNAL(UARTconnected()), this, SLOT(UARTconnected()));
 
+
+    // CONNECT MOTOR SIGNALS
     connect(this->motor, SIGNAL(sendMessage(const QString*,const QString*,int)),
             this->UART, SLOT(sendMessage(const QString*,const QString*,int)));
 
@@ -627,7 +633,7 @@ void MainWindow::UARTconnected()
 }
 
 
-
+// ask the user to save parameters
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     QMessageBox saveOrNot;
@@ -705,7 +711,7 @@ void MainWindow::showChangedMaxRGBvalues(int Value)
 }
 
 
-
+// change image processing parameter
 void MainWindow::changeInpaintRadius(int Value)
 {
     this->ImPrWorker->setInpaintRadius(Value);
